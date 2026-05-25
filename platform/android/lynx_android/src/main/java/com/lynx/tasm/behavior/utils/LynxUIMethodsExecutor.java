@@ -47,6 +47,24 @@ public class LynxUIMethodsExecutor {
     LYNX_UI_METHOD_INVOKER_MAP.put(methodInvoker.getClass(), methodInvoker);
   }
 
+  /**
+   * Whisker-fork addition (v3.7.0-whisker.4).
+   *
+   * Register a method invoker against a specific target LynxBaseUI
+   * class. Required because the bare
+   * {@link #registerMethodInvoker(LynxUIMethodInvoker)} overload
+   * keys the map by the invoker's own class (not the UI class), so
+   * the subsequent {@link #findLynxUIMethodInvoker(Class)} lookup —
+   * which looks up by the target UI's class — never finds a
+   * registered entry. Whisker codegen takes this overload so its
+   * KSP-emitted invokers are reachable without depending on the
+   * "{@code <targetClass>$$MethodInvoker}" reflection fallback.
+   */
+  public static void registerMethodInvoker(
+      Class<? extends LynxBaseUI> targetClass, LynxUIMethodInvoker<?> methodInvoker) {
+    LYNX_UI_METHOD_INVOKER_MAP.put(targetClass, methodInvoker);
+  }
+
   static <T extends LynxBaseUI> LynxUIMethodInvoker<T> findLynxUIMethodInvoker(
       Class<? extends LynxBaseUI> cls) {
     LynxUIMethodInvoker<T> methodInvoker =
