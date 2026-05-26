@@ -212,7 +212,29 @@ typedef enum lynx_ui_method_value_type_e {
   LYNX_UI_METHOD_VALUE_INT = 2,
   LYNX_UI_METHOD_VALUE_DOUBLE = 3,
   LYNX_UI_METHOD_VALUE_STRING = 4,
+  // Recursive variants — used for method *results* (a
+  // `boundingClientRect` map, etc.). Args only ever use the scalar
+  // variants above.
+  LYNX_UI_METHOD_VALUE_ARRAY = 5,
+  LYNX_UI_METHOD_VALUE_MAP = 6,
 } lynx_ui_method_value_type_e;
+
+// Forward-declared so `array`/`map` can hold them recursively. The
+// map holds a *pointer* to `kv` (incomplete-type OK), and `kv` holds
+// `value` *by value* — so `kv` is defined AFTER the full
+// `lynx_ui_method_value_t` below.
+struct lynx_ui_method_value_t;
+struct lynx_ui_method_kv_t;
+
+typedef struct lynx_ui_method_value_array_t {
+  struct lynx_ui_method_value_t* items;  // length = count
+  size_t count;
+} lynx_ui_method_value_array_t;
+
+typedef struct lynx_ui_method_value_map_t {
+  struct lynx_ui_method_kv_t* entries;  // length = count
+  size_t count;
+} lynx_ui_method_value_map_t;
 
 typedef struct lynx_ui_method_value_t {
   lynx_ui_method_value_type_e type;
@@ -220,12 +242,19 @@ typedef struct lynx_ui_method_value_t {
     bool b;
     int64_t i;
     double f;
-    // String: caller-owned UTF-8, NUL-terminated. Borrowed for the
-    // duration of `lynx_ui_invoke_method` only — the implementation
-    // copies the contents into a `base::String` before returning.
+    // String: caller-owned UTF-8, NUL-terminated. For args, borrowed
+    // for the duration of the call. For results, owned by the wrapper
+    // and freed after the result callback returns.
     const char* s;
+    lynx_ui_method_value_array_t array;
+    lynx_ui_method_value_map_t map;
   } v;
 } lynx_ui_method_value_t;
+
+typedef struct lynx_ui_method_kv_t {
+  const char* key;  // NUL-terminated UTF-8
+  lynx_ui_method_value_t value;
+} lynx_ui_method_kv_t;
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_ui_invoke_method(
     lynx_shell_t* shell,
@@ -233,6 +262,27 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_ui_invoke_method(
     const char* method_name,
     const lynx_ui_method_value_t* args,
     size_t arg_count);
+
+// Async UI-method dispatch — the result-returning variant used for
+// `boundingClientRect` / `takeScreenshot` etc. Unlike the
+// fire-and-forget `lynx_ui_invoke_method`, this captures the
+// `Catalyzer::Invoke` result callback: it converts the callback's
+// `lynx::pub::Value` into a heap-owned `lynx_ui_method_value_t` tree
+// and invokes `callback(code, &result, user_data)` (typically on the
+// UI thread, after the method runs). `result` is owned by the wrapper
+// and only valid for the duration of the callback — the wrapper frees
+// the tree once `callback` returns, so the callee must copy out.
+typedef void (*lynx_ui_method_result_cb)(int32_t code,
+                                          const lynx_ui_method_value_t* result,
+                                          void* user_data);
+LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_ui_invoke_method_async(
+    lynx_shell_t* shell,
+    int32_t sign,
+    const char* method_name,
+    const lynx_ui_method_value_t* args,
+    size_t arg_count,
+    lynx_ui_method_result_cb callback,
+    void* user_data);
 
 // ----- subsecond ASLR anchor ------------------------------------------------
 
