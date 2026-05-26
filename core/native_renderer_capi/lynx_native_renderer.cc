@@ -290,6 +290,11 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_ui_invoke_method(
         args_array->emplace_back(lynx::lepus::Value(
             lynx::base::String(v.v.s != nullptr ? v.v.s : "")));
         break;
+      default:
+        // Array / map args aren't supported by the dispatch ABI;
+        // treat as null. (Results use the recursive variants.)
+        args_array->emplace_back(lynx::lepus::Value());
+        break;
     }
   }
   auto params_dict = lynx::lepus::Dictionary::Create();
