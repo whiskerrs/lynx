@@ -151,6 +151,17 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_inline_styles(
     lynx_fiber_element_t* element,
     const char* css);
 
+// Register a (bubble-phase, `bindEvent`) event handler for
+// `event_name` on `element`. The embedder may have no JS runtime, so
+// the handler function is a sentinel — the actual fire is observed via
+// the event-reporter hook. The point of registering it is to populate
+// the element's event set: Lynx's UI components only EMIT their
+// component-specific events (scroll, layout, uiappear, …) when the
+// element has a handler bound for that event name.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_event_handler(
+    lynx_fiber_element_t* element,
+    const char* event_name);
+
 // Append `child` to `parent`'s children list.
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_append_child(
     lynx_fiber_element_t* parent,
