@@ -117,17 +117,41 @@ find "$BUILD_DIR/Pods" -name '*.xcconfig' -print0 | \
 # with `lynx_` (modp_b64.h: `#define modp_b64_decode lynx_modp_b64_decode`
 # etc.) to avoid collisions when an embedder also links a stock
 # modp_b64. The defines are wired up correctly inside `modp_b64.c`
-# itself, but `core/runtime/lepus/bindings/renderer_functions.cc:1332`
-# was missed and still calls `modp_b64_decode` directly — which post-
-# rename is no longer a visible symbol. The pinned upstream pod ships
-# this broken file; clang refuses to link. Patch the one call site
-# here so the rest of the xcodebuild step has a chance.
-echo "==> Patch modp_b64 symbol drift in renderer_functions.cc"
-RF="$BUILD_DIR/Pods/Lynx/core/runtime/lepus/bindings/renderer_functions.cc"
-if [ -f "$RF" ]; then
-  /usr/bin/perl -i -pe 's/(?<![_A-Za-z0-9])modp_b64_decode\b/lynx_modp_b64_decode/g' "$RF"
-  echo "    patched $(basename "$RF")"
-fi
+# itself, but a handful of call sites in the rest of the source tree
+# still use the un-prefixed names and so refer to no visible symbol
+# after the rename. Patch each call site we know about.
+#
+# Files / symbols observed broken on the 3.7.0 pod:
+#
+#   core/runtime/lepus/bindings/renderer_functions.cc → modp_b64_decode
+#   core/renderer/ui_wrapper/common/ios/prop_bundle_darwin.mm
+#       → modp_b64_decode_len, modp_b64_encode_len
+#   core/runtime/js/jsi/jsc/jsc_helper.cc  → modp_b64_encode_len, modp_b64_encode
+#   core/runtime/js/jsi/jsc/jsc_runtime.cc → modp_b64_decode_len
+#
+# `third_party/modp_b64/` itself is where the `#define` lives, so
+# leave it untouched (the local refs there are *to* the renamed
+# implementations). Patch only the consumers.
+echo "==> Patch modp_b64 symbol drift in consumer files"
+MODP_FILES=(
+  core/runtime/lepus/bindings/renderer_functions.cc
+  core/renderer/ui_wrapper/common/ios/prop_bundle_darwin.mm
+  core/runtime/js/jsi/jsc/jsc_helper.cc
+  core/runtime/js/jsi/jsc/jsc_runtime.cc
+)
+for rel in "${MODP_FILES[@]}"; do
+  f="$BUILD_DIR/Pods/Lynx/$rel"
+  if [ -f "$f" ]; then
+    # All public modp_b64 entry points the renamer covers. Use a
+    # single substitution that fires for any `modp_b64_<word>` not
+    # already prefixed with `lynx_`. The negative-lookbehind keeps us
+    # from double-prefixing.
+    /usr/bin/perl -i -pe \
+      's/(?<![_A-Za-z0-9])(?<!lynx_)(modp_b64_(?:encode_data|encode_len|encode|decode_len|decode))\b/lynx_$1/g' \
+      "$f"
+    echo "    patched $rel"
+  fi
+done
 
 # ----- Overlay fork-modified Lynx core sources -------------------------------
 
