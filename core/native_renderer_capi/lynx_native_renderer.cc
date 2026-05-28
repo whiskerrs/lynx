@@ -108,6 +108,24 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT bool lynx_shell_run_on_tasm_thread(
         auto* page_proxy = tasm->page_proxy();
         if (page_proxy != nullptr) {
           capture->manager = page_proxy->element_manager().get();
+          // Propagate the PageConfig to the ElementManager itself.
+          // `tasm->SetPageConfig` alone leaves `manager->GetConfig()`
+          // null in this template-less fiber-arch path, and a
+          // `ListElement` dereferences it at construction
+          // (`GetConfig()->GetPipelineSchedulerConfig()`), so without
+          // this every `<list>` would EXC_BAD_ACCESS on creation.
+          capture->manager->SetConfig(config);
+          // Force Lynx's *native* (C++) list implementation for every
+          // `<list>` in this engine. This is `ResolveEnableNativeList`
+          // Case 1 (shell flag, highest priority): it sets
+          // `disable_list_platform_implementation_ = true`, so the list
+          // is driven by the decoupled `ListMediator` (which talks to
+          // the installed `ListNativeItemProvider`) instead of the
+          // platform `UIList`, whose `componentAtIndex` diff data the
+          // JS framework supplies and Whisker — having no JS runtime —
+          // does not, which otherwise NPEs in
+          // `UIList.onLayoutCompleted`.
+          capture->manager->SetEnableNativeListFromShell(true);
         }
       }
       capture->fiber_arch_initialized = true;
@@ -173,7 +191,24 @@ lynx_create_fiber_element_by_name(lynx_shell_t* shell, const char* tag_name) {
   // `scroll-view`) and custom (`x-input` / `x-refresh` / …) alike.
   // For tags Lynx's behaviour registry doesn't know, it returns
   // nullptr and we surface that to the embedder.
-  auto ref = shell->manager->CreateFiberNode(lynx::base::String(tag_name));
+  //
+  // `list` is special: `CreateFiberNode` only builds a *generic*
+  // `FiberElement`, which carries none of the list machinery (the
+  // decoupled adapter / item provider live in the typed `ListElement`
+  // C++ class). So we route it through the enum-mapped
+  // `CreateFiberElement(tag)` — which resolves `"list"` →
+  // `ELEMENT_LIST` and constructs a real `ListElement` with empty
+  // lepus `componentAtIndex` / `enqueueComponent` callbacks. With
+  // no JS callbacks the element relies on the native item provider
+  // installed via `lynx_list_set_native_item_provider` (and falls
+  // back to the SSR helper / lepus paths if the embedder never
+  // installs one), which is exactly the contract Whisker needs.
+  fml::RefPtr<lynx::tasm::FiberElement> ref;
+  if (std::strcmp(tag_name, "list") == 0) {
+    ref = shell->manager->CreateFiberElement(lynx::base::String(tag_name));
+  } else {
+    ref = shell->manager->CreateFiberNode(lynx::base::String(tag_name));
+  }
   if (!ref) return nullptr;
   return new lynx_fiber_element_t{std::move(ref)};
 }
