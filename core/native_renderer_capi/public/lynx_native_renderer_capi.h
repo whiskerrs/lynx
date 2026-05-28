@@ -224,6 +224,22 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
     void* user_data,
     lynx_user_data_free_fn user_data_free);
 
+// Broadcast the item count on a `<list>` element by writing an
+// `update-list-info` Map attribute with `count` `insertAction`
+// entries (`{position: i, item-key: "w_<i>"}`). The decoupled list
+// container routes this attr to `ListAdapter::UpdateFiberDataSource`,
+// which then calls back into the installed item provider — typically
+// the one set via `lynx_list_set_native_item_provider`. Pair the two
+// to drive a virtualised `<list>` from a non-JS embedder.
+//
+// `update-list-info` is a structured (Map) attribute, so embedders
+// without lepus header access can't synthesise it via the string
+// `lynx_element_set_attribute` capi — this capi exists so they can
+// trigger the broadcast with just an `int`.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
+    lynx_fiber_element_t* element,
+    int32_t count);
+
 // ----- Pipeline -------------------------------------------------------------
 
 // Install `page` as the shell's root PageElement. `page` MUST have

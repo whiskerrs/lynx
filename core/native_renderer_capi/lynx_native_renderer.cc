@@ -300,6 +300,34 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
   list->SetNativeItemProvider(std::move(provider));
 }
 
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
+    lynx_fiber_element_t* element,
+    int32_t count) {
+  if (element == nullptr || !element->ref || count < 0) {
+    return;
+  }
+  // Build `{insertAction: [{position:i, item-key:"w_<i>"}, …]}` —
+  // the schema `ListAdapter::UpdateFiberDataSource` expects. The
+  // attribute setter on `decoupled_list_container_impl` requires a
+  // Map value (string attrs go through a different branch), which
+  // can't be expressed through the string-only
+  // `lynx_element_set_attribute` capi — hence this dedicated entry.
+  auto insert_array = lynx::lepus::CArray::Create();
+  for (int32_t i = 0; i < count; ++i) {
+    auto entry = lynx::lepus::Dictionary::Create();
+    entry->SetValue(lynx::base::String("position"), lynx::lepus::Value(i));
+    entry->SetValue(
+        lynx::base::String("item-key"),
+        lynx::lepus::Value(lynx::base::String("w_" + std::to_string(i))));
+    insert_array->emplace_back(lynx::lepus::Value(std::move(entry)));
+  }
+  auto update_info = lynx::lepus::Dictionary::Create();
+  update_info->SetValue(lynx::base::String("insertAction"),
+                        lynx::lepus::Value(std::move(insert_array)));
+  element->ref->SetAttribute(lynx::base::String("update-list-info"),
+                              lynx::lepus::Value(std::move(update_info)));
+}
+
 // ----- Pipeline -------------------------------------------------------------
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_shell_set_root_element(
