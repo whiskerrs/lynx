@@ -5,6 +5,7 @@
 #ifndef CORE_RENDERER_DOM_FIBER_LIST_ELEMENT_H_
 #define CORE_RENDERER_DOM_FIBER_LIST_ELEMENT_H_
 
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -16,7 +17,6 @@
 #include "core/renderer/ui_component/list/list_container_delegate_internal.h"
 #include "core/renderer/ui_component/list/mediator/list_mediator.h"
 #include "core/renderer/ui_wrapper/layout/list_node.h"
-#include "core/runtime/lepusng/jsvalue_helper.h"
 
 namespace lynx {
 namespace tasm {
@@ -58,6 +58,35 @@ class ListElementSSRHelper {
       ssr_elements_;
 };
 
+// Native (non-lepus) item provider for `ListElement`. Mirrors the
+// callback contract of `componentAtIndex` / `enqueueComponent` /
+// `componentAtIndexes` so a C++ embedder (e.g. a Rust runtime
+// without a JS framework) can drive the list directly. The native
+// path takes priority over the lepus path in `ListElement` if
+// installed via `SetNativeItemProvider`; otherwise the existing
+// lepus / SSR paths are used as-is.
+struct ListNativeItemProvider {
+  // Called when the list needs the element for `index`. Implementation
+  // must create or look up a child `FiberElement` and return its
+  // `impl_id`, or `list::kInvalidIndex` (= 0) on failure.
+  std::function<int32_t(uint32_t index, int64_t operation_id,
+                        bool enable_reuse_notification)>
+      component_at_index;
+
+  // Called when the element identified by `sign` is leaving the
+  // viewport. The provider may pool the element for reuse or release
+  // it. Optional — leave empty for no-op recycling.
+  std::function<void(int32_t sign)> enqueue_component;
+
+  // Optional batch variant. If empty, `ListElement::ComponentAtIndexes`
+  // falls back to looping `component_at_index`. Provided for prefetch
+  // / parallel-render optimisations the embedder may wish to drive.
+  std::function<void(const std::vector<uint32_t>& indices,
+                     const std::vector<int64_t>& operation_ids,
+                     bool enable_reuse_notification)>
+      component_at_indexes;
+};
+
 class ListElement : public FiberElement, public tasm::ListNode {
  public:
   ListElement(ElementManager* manager, const base::String& tag,
@@ -70,17 +99,11 @@ class ListElement : public FiberElement, public tasm::ListNode {
     return fml::AdoptRef<FiberElement>(
         new ListElement(*this, clone_resolved_props));
   }
-  void visitor(void* rt, void* func, uint64_t trace_tool) override {
-    LEPUSRuntime* runtime = reinterpret_cast<LEPUSRuntime*>(rt);
-    LEPUS_MarkFunc* mark_func = reinterpret_cast<LEPUS_MarkFunc*>(func);
-    LEPUSValue v = WRAP_AS_JS_VALUE(component_at_index_.value());
-    mark_func(runtime, v, trace_tool);
-    v = WRAP_AS_JS_VALUE(component_at_indexes_.value());
-    mark_func(runtime, v, trace_tool);
-    v = WRAP_AS_JS_VALUE(enqueue_component_.value());
-    mark_func(runtime, v, trace_tool);
-    FiberElement::visitor(rt, reinterpret_cast<void*>(mark_func), trace_tool);
-  }
+  // Body moved to .cc so the header doesn't have to drag in
+  // `jsvalue_helper.h` (and its `quickjs/include/trace-gc.h`), which
+  // lets embedders without the QuickJS header set include
+  // `list_element.h` cleanly.
+  void visitor(void* rt, void* func, uint64_t trace_tool) override;
 
   ~ListElement() override = default;
 
@@ -158,6 +181,26 @@ class ListElement : public FiberElement, public tasm::ListNode {
     ssr_helper_ = std::move(ssr_helper);
   }
 
+  // Install a native (non-lepus) item provider. While installed, the
+  // list's `ComponentAtIndex` / `EnqueueComponent` /
+  // `ComponentAtIndexes` route to the provider's callbacks ahead of
+  // the lepus path. Intended for embedders without a JS runtime
+  // (e.g. Whisker). The SSR path still takes priority during
+  // hydration so existing SSR behaviour is unchanged.
+  void SetNativeItemProvider(ListNativeItemProvider provider) {
+    native_item_provider_ = std::move(provider);
+  }
+
+  // True iff a native item provider is installed and supplies the
+  // mandatory `component_at_index` callback.
+  bool HasNativeItemProvider() const {
+    return static_cast<bool>(native_item_provider_.component_at_index);
+  }
+
+  // Tear down the native provider (releases captured state, e.g.
+  // an embedder's `Box<dyn Fn>` held inside the std::function).
+  void ClearNativeItemProvider() { native_item_provider_ = {}; }
+
   void set_will_destroy(bool destroy) override;
 
   // ssr hydrate.
@@ -227,6 +270,7 @@ class ListElement : public FiberElement, public tasm::ListNode {
   std::optional<bool> enable_decoupled_list_;
   base::String platform_node_tag_{BASE_STATIC_STRING(kListNodeTag)};
   std::optional<ListElementSSRHelper> ssr_helper_;
+  ListNativeItemProvider native_item_provider_;
   bool batch_render_strategy_flushed_{false};
   std::unique_ptr<ListMediator> list_mediator_{nullptr};
   std::unique_ptr<ListContainerDelegateInternal>
