@@ -231,8 +231,38 @@ int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
   // via the caller of `ComponentAtIndex`) is responsible for
   // pumping the item through the pipeline.
   if (native_item_provider_.component_at_index) {
-    return native_item_provider_.component_at_index(
+    int32_t sign = native_item_provider_.component_at_index(
         index, operationId, enable_reuse_notification);
+    if (sign != list::kInvalidIndex && element_manager_ != nullptr) {
+      auto* node = element_manager_->node_manager()->Get(sign);
+      if (node != nullptr) {
+        auto* item = static_cast<FiberElement*>(node);
+        auto options = std::make_shared<PipelineOptions>();
+        options->trigger_layout_ = true;
+        options->operation_id = operationId;
+        options->list_comp_id_ = item->impl_id();
+        if (DisableListPlatformImplementation()) {
+          options->list_id_ = impl_id();
+        }
+        // Resolve style / kick layout for the freshly-appended subtree.
+        element_manager_->OnPatchFinish(options, item);
+        // Fire the bind-complete signal synchronously so the mediator
+        // attaches the item_holder to `attached_children_`. The outer
+        // `OnLayoutChildren`'s `StartInterceptListElementUpdated()`
+        // keeps `intercept_depth > 0`, so the recursive
+        // `OnLayoutChildren(true, index)` call inside
+        // `OnFinishBindItemHolder` is suppressed. The final
+        // `HandleLayoutOrScrollResult` (run from `OnLayoutAfter`
+        // once `Fill` returns) then iterates `attached_children_`
+        // and pushes each `InsertListItemPaintingNode` to the
+        // platform UI. Without this call, the C++ side binds
+        // item_holders to elements but the Java
+        // `UIListContainer` never receives `insertListItemNode`
+        // — items render to nothing.
+        OnComponentFinished(item, options);
+      }
+    }
+    return sign;
   }
   if (element_manager_ && element_manager_->DisableListCallbackIfDetached() &&
       IsDetached()) {

@@ -354,6 +354,13 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
     entry->SetValue(
         lynx::base::String("item-key"),
         lynx::lepus::Value(lynx::base::String("w_" + std::to_string(i))));
+    // Intentionally NOT setting `estimated-main-axis-size-px`.
+    // Lynx's documented default — "size of <list> in the main axis
+    // direction" — applies: the first item's item_holder budgets
+    // the full viewport, Fill exits after one iter, the item is
+    // bound + measured, and the next layout pass advances. Whisker
+    // will surface per-`list_item` overrides via a typed builder
+    // method.
     insert_array->emplace_back(lynx::lepus::Value(std::move(entry)));
   }
   auto update_info = lynx::lepus::Dictionary::Create();
