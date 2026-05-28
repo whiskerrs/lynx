@@ -31,6 +31,7 @@
 #include "core/public/pub_value.h"
 #include "core/renderer/dom/element_manager.h"
 #include "core/renderer/dom/fiber/fiber_element.h"
+#include "core/renderer/dom/fiber/list_element.h"
 #include "core/renderer/dom/fiber/page_element.h"
 #include "core/renderer/dom/fiber/raw_text_element.h"
 #include "core/renderer/dom/fiber/scroll_element.h"
@@ -242,6 +243,61 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_remove_child(
     return;
   }
   parent->ref->RemoveNode(child->ref);
+}
+
+// ----- List native item provider -------------------------------------------
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
+    lynx_fiber_element_t* element,
+    lynx_list_component_at_index_fn component_at_index_fn,
+    lynx_list_enqueue_component_fn enqueue_component_fn,
+    void* user_data,
+    lynx_user_data_free_fn user_data_free) {
+  if (element == nullptr || !element->ref || !element->ref->is_list()) {
+    // Caller mistake (or NULL); silently no-op. Also free the cookie
+    // since we won't be taking ownership.
+    if (user_data != nullptr && user_data_free != nullptr) {
+      user_data_free(user_data);
+    }
+    return;
+  }
+  auto* list = static_cast<lynx::tasm::ListElement*>(element->ref.get());
+
+  // Clear path: NULL `component_at_index` means "remove provider". We
+  // also free the caller's cookie since they explicitly handed it off.
+  if (component_at_index_fn == nullptr) {
+    list->ClearNativeItemProvider();
+    if (user_data != nullptr && user_data_free != nullptr) {
+      user_data_free(user_data);
+    }
+    return;
+  }
+
+  // Pin `user_data` lifetime to the captured lambdas via a
+  // shared_ptr with a custom deleter that calls `user_data_free`.
+  // When the ListElement is destroyed (or a later
+  // SetNativeItemProvider replaces this one), the captured
+  // shared_ptr refcount drops to zero and the deleter fires — which
+  // is what releases e.g. a Rust `Box<dyn FnMut>` on the other side.
+  std::shared_ptr<void> ctx(user_data, [user_data_free](void* p) {
+    if (p != nullptr && user_data_free != nullptr) {
+      user_data_free(p);
+    }
+  });
+
+  lynx::tasm::ListNativeItemProvider provider;
+  provider.component_at_index =
+      [component_at_index_fn, ctx](uint32_t index, int64_t op_id,
+                                   bool reuse_notification) -> int32_t {
+        return component_at_index_fn(index, op_id,
+                                     reuse_notification ? 1 : 0, ctx.get());
+      };
+  if (enqueue_component_fn != nullptr) {
+    provider.enqueue_component = [enqueue_component_fn, ctx](int32_t sign) {
+      enqueue_component_fn(sign, ctx.get());
+    };
+  }
+  list->SetNativeItemProvider(std::move(provider));
 }
 
 // ----- Pipeline -------------------------------------------------------------

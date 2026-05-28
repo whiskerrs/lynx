@@ -203,6 +203,187 @@ TEST_F(SSRListElement, ListElementSSRHelper_ComponentAtIndexInSSR) {
               list_element_->ssr_helper_->ssr_elements_[9].second);
 }
 
+// ---------------------------------------------------------------------------
+// Native item provider tests
+// ---------------------------------------------------------------------------
+
+TEST_F(SSRListElement, NativeItemProvider_HasAndClear) {
+  EXPECT_FALSE(list_element_->HasNativeItemProvider());
+
+  ListNativeItemProvider provider;
+  provider.component_at_index = [](uint32_t, int64_t, bool) -> int32_t {
+    return 0;
+  };
+  list_element_->SetNativeItemProvider(std::move(provider));
+  EXPECT_TRUE(list_element_->HasNativeItemProvider());
+
+  list_element_->ClearNativeItemProvider();
+  EXPECT_FALSE(list_element_->HasNativeItemProvider());
+}
+
+TEST_F(SSRListElement, NativeItemProvider_ComponentAtIndexRoutesToCallback) {
+  // Track every call.
+  std::vector<std::tuple<uint32_t, int64_t, bool>> calls;
+  ListNativeItemProvider provider;
+  provider.component_at_index = [&calls](uint32_t index, int64_t op_id,
+                                          bool reuse) -> int32_t {
+    calls.emplace_back(index, op_id, reuse);
+    // Return a synthetic impl_id derived from index so the test can
+    // see the value flow back through ListElement::ComponentAtIndex.
+    return static_cast<int32_t>(1000 + index);
+  };
+  list_element_->SetNativeItemProvider(std::move(provider));
+
+  EXPECT_EQ(1000, list_element_->ComponentAtIndex(0, 42, false));
+  EXPECT_EQ(1003, list_element_->ComponentAtIndex(3, 43, true));
+
+  ASSERT_EQ(2u, calls.size());
+  EXPECT_EQ(0u, std::get<0>(calls[0]));
+  EXPECT_EQ(42, std::get<1>(calls[0]));
+  EXPECT_FALSE(std::get<2>(calls[0]));
+  EXPECT_EQ(3u, std::get<0>(calls[1]));
+  EXPECT_EQ(43, std::get<1>(calls[1]));
+  EXPECT_TRUE(std::get<2>(calls[1]));
+}
+
+TEST_F(SSRListElement, NativeItemProvider_EnqueueRoutesWhenProvided) {
+  std::vector<int32_t> enqueued;
+  ListNativeItemProvider provider;
+  provider.component_at_index = [](uint32_t, int64_t, bool) -> int32_t {
+    return 0;
+  };
+  provider.enqueue_component = [&enqueued](int32_t sign) {
+    enqueued.push_back(sign);
+  };
+  list_element_->SetNativeItemProvider(std::move(provider));
+
+  list_element_->EnqueueComponent(17);
+  list_element_->EnqueueComponent(42);
+
+  ASSERT_EQ(2u, enqueued.size());
+  EXPECT_EQ(17, enqueued[0]);
+  EXPECT_EQ(42, enqueued[1]);
+}
+
+TEST_F(SSRListElement, NativeItemProvider_EnqueueWithoutCallbackIsNoOp) {
+  // `component_at_index` is set but `enqueue_component` is left empty
+  // — recycling notifications must be silently dropped instead of
+  // falling through to the lepus path (which would crash on the empty
+  // `enqueue_component_`).
+  ListNativeItemProvider provider;
+  provider.component_at_index = [](uint32_t, int64_t, bool) -> int32_t {
+    return 0;
+  };
+  list_element_->SetNativeItemProvider(std::move(provider));
+  // No assertion needed beyond "does not crash".
+  list_element_->EnqueueComponent(99);
+}
+
+TEST_F(SSRListElement,
+       NativeItemProvider_ComponentAtIndexesBatchFallsBackToLoop) {
+  // Provider supplies only the single-item callback; the list's batch
+  // path must loop over it instead of falling through to the lepus
+  // `component_at_indexes_` (which is empty in this fixture).
+  std::vector<uint32_t> seen_indices;
+  std::vector<int64_t> seen_ops;
+  ListNativeItemProvider provider;
+  provider.component_at_index = [&seen_indices, &seen_ops](
+                                    uint32_t index, int64_t op_id,
+                                    bool) -> int32_t {
+    seen_indices.push_back(index);
+    seen_ops.push_back(op_id);
+    return static_cast<int32_t>(2000 + index);
+  };
+  list_element_->SetNativeItemProvider(std::move(provider));
+
+  auto indices = lepus::CArray::Create();
+  indices->emplace_back(lepus::Value(static_cast<uint32_t>(2)));
+  indices->emplace_back(lepus::Value(static_cast<uint32_t>(5)));
+  indices->emplace_back(lepus::Value(static_cast<uint32_t>(7)));
+  auto op_ids = lepus::CArray::Create();
+  op_ids->emplace_back(lepus::Value(static_cast<int64_t>(101)));
+  op_ids->emplace_back(lepus::Value(static_cast<int64_t>(102)));
+  op_ids->emplace_back(lepus::Value(static_cast<int64_t>(103)));
+
+  list_element_->ComponentAtIndexes(indices, op_ids, false);
+
+  ASSERT_EQ(3u, seen_indices.size());
+  EXPECT_EQ(2u, seen_indices[0]);
+  EXPECT_EQ(5u, seen_indices[1]);
+  EXPECT_EQ(7u, seen_indices[2]);
+  ASSERT_EQ(3u, seen_ops.size());
+  EXPECT_EQ(101, seen_ops[0]);
+  EXPECT_EQ(102, seen_ops[1]);
+  EXPECT_EQ(103, seen_ops[2]);
+}
+
+TEST_F(SSRListElement, NativeItemProvider_BatchCallbackUsedWhenProvided) {
+  // When both single and batch callbacks are present, the batch one
+  // should be invoked directly (no looping into `component_at_index`).
+  bool single_called = false;
+  std::vector<uint32_t> batch_indices;
+  std::vector<int64_t> batch_ops;
+  bool batch_reuse = false;
+  ListNativeItemProvider provider;
+  provider.component_at_index = [&single_called](uint32_t, int64_t,
+                                                  bool) -> int32_t {
+    single_called = true;
+    return 0;
+  };
+  provider.component_at_indexes =
+      [&](const std::vector<uint32_t>& indices,
+          const std::vector<int64_t>& op_ids, bool reuse) {
+        batch_indices = indices;
+        batch_ops = op_ids;
+        batch_reuse = reuse;
+      };
+  list_element_->SetNativeItemProvider(std::move(provider));
+
+  auto indices = lepus::CArray::Create();
+  indices->emplace_back(lepus::Value(static_cast<uint32_t>(0)));
+  indices->emplace_back(lepus::Value(static_cast<uint32_t>(1)));
+  auto op_ids = lepus::CArray::Create();
+  op_ids->emplace_back(lepus::Value(static_cast<int64_t>(10)));
+  op_ids->emplace_back(lepus::Value(static_cast<int64_t>(20)));
+
+  list_element_->ComponentAtIndexes(indices, op_ids, true);
+
+  EXPECT_FALSE(single_called);
+  ASSERT_EQ(2u, batch_indices.size());
+  EXPECT_EQ(0u, batch_indices[0]);
+  EXPECT_EQ(1u, batch_indices[1]);
+  ASSERT_EQ(2u, batch_ops.size());
+  EXPECT_EQ(10, batch_ops[0]);
+  EXPECT_EQ(20, batch_ops[1]);
+  EXPECT_TRUE(batch_reuse);
+}
+
+TEST_F(SSRListElement, NativeItemProvider_SSRHelperStillTakesPriority) {
+  // If an SSR helper is installed AND a native provider is installed,
+  // SSR wins (mirrors the existing `if (ssr_helper_) return` at the
+  // top of ComponentAtIndex). Important: SSR hydration must not be
+  // disturbed by an embedder accidentally also installing a native
+  // provider.
+  auto item = fml::AdoptRef<ComponentElement>(
+      new ComponentElement(manager_, "", 1, "", "", ""));
+  ListElementSSRHelper ssr_helper(list_element_.get());
+  ssr_helper.AppendChild(item);
+  list_element_->SetSsrHelper(std::move(ssr_helper));
+
+  bool native_called = false;
+  ListNativeItemProvider provider;
+  provider.component_at_index = [&native_called](uint32_t, int64_t,
+                                                  bool) -> int32_t {
+    native_called = true;
+    return -1;
+  };
+  list_element_->SetNativeItemProvider(std::move(provider));
+
+  list_element_->ComponentAtIndex(0, -1, false);
+
+  EXPECT_FALSE(native_called);
+}
+
 }  // namespace testing
 }  // namespace tasm
 }  // namespace lynx

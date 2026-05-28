@@ -172,6 +172,58 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_remove_child(
     lynx_fiber_element_t* parent,
     lynx_fiber_element_t* child);
 
+// ----- List native item provider -------------------------------------------
+
+// Returned by `lynx_list_component_at_index_fn` to signal "no element
+// could be produced for this index". Matches `list::kInvalidIndex`.
+#define LYNX_LIST_INVALID_INDEX 0
+
+// Called by Lynx's list machinery when it needs the element for a given
+// `index`. Implementation must create or look up a child FiberElement
+// and return its `lynx_element_id`, or `LYNX_LIST_INVALID_INDEX` on
+// failure. `user_data` is the cookie passed to
+// `lynx_list_set_native_item_provider`. `reuse_notification` mirrors the
+// upstream `enable_reuse_notification` flag (1 if the embedder should
+// treat the call as "may reuse an existing element").
+typedef int32_t (*lynx_list_component_at_index_fn)(uint32_t index,
+                                                    int64_t operation_id,
+                                                    int reuse_notification,
+                                                    void* user_data);
+
+// Optional. Called when the element at `sign` leaves the viewport, so
+// the embedder can pool or release it. May be NULL — recycling
+// notifications will then be silently dropped.
+typedef void (*lynx_list_enqueue_component_fn)(int32_t sign, void* user_data);
+
+// Free-callback for the `user_data` cookie, invoked when the list
+// element is destroyed or the provider is cleared. May be NULL if the
+// embedder manages the cookie's lifetime externally.
+typedef void (*lynx_user_data_free_fn)(void* user_data);
+
+// Install a native (non-lepus) item provider on a `<list>` element.
+// While installed, the list routes its `componentAtIndex` /
+// `enqueueComponent` / `componentAtIndexes` calls to these C callbacks
+// instead of the lepus framework callbacks — letting an embedder
+// without a JS runtime drive the list directly while keeping all of
+// Lynx's virtualisation / recycling / layout behaviour.
+//
+// `element` must have been created with `LYNX_ELEMENT_TAG_LIST` (or
+// the `"list"` by-name path). Passing a non-list element is a no-op.
+// `component_at_index` is required; `enqueue_component` is optional
+// (pass NULL to ignore recycling notifications). `user_data_free` is
+// invoked on the cookie when the list is destroyed OR when another
+// provider is installed on top — pass NULL if no cleanup is needed.
+//
+// Calling this again replaces the previous provider (and invokes the
+// previous provider's `user_data_free`). Pass `component_at_index =
+// NULL` to clear the provider entirely.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
+    lynx_fiber_element_t* element,
+    lynx_list_component_at_index_fn component_at_index,
+    lynx_list_enqueue_component_fn enqueue_component,
+    void* user_data,
+    lynx_user_data_free_fn user_data_free);
+
 // ----- Pipeline -------------------------------------------------------------
 
 // Install `page` as the shell's root PageElement. `page` MUST have

@@ -205,6 +205,13 @@ int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
     // to add item elements to the list element.
     return ssr_helper_->ComponentAtIndexInSSR(index, operationId);
   }
+  // Native (non-lepus) item provider takes priority over the lepus
+  // path. Enables embedders without a JS framework to drive the list
+  // directly. See `ListNativeItemProvider` in list_element.h.
+  if (native_item_provider_.component_at_index) {
+    return native_item_provider_.component_at_index(
+        index, operationId, enable_reuse_notification);
+  }
   if (element_manager_ && element_manager_->DisableListCallbackIfDetached() &&
       IsDetached()) {
     return list::kInvalidIndex;
@@ -227,6 +234,39 @@ void ListElement::ComponentAtIndexes(
               [this](lynx::perfetto::EventContext ctx) {
                 UpdateTraceDebugInfo(ctx.event());
               });
+  // Native item provider takes priority. If the embedder supplied the
+  // batch callback we use it directly; otherwise we loop the single
+  // `component_at_index` so the embedder doesn't have to implement the
+  // batch variant just to get correct behaviour.
+  if (native_item_provider_.component_at_index) {
+    const size_t index_size = index_array->size();
+    const size_t operation_id_size = operation_id_array->size();
+    if (!index_size || !operation_id_size || index_size != operation_id_size) {
+      return;
+    }
+    if (native_item_provider_.component_at_indexes) {
+      std::vector<uint32_t> indices;
+      std::vector<int64_t> operation_ids;
+      indices.reserve(index_size);
+      operation_ids.reserve(index_size);
+      for (size_t i = 0; i < index_size; ++i) {
+        indices.push_back(
+            static_cast<uint32_t>(index_array->get(i).Number()));
+        operation_ids.push_back(
+            static_cast<int64_t>(operation_id_array->get(i).Number()));
+      }
+      native_item_provider_.component_at_indexes(indices, operation_ids,
+                                                  enable_reuse_notification);
+    } else {
+      for (size_t i = 0; i < index_size; ++i) {
+        native_item_provider_.component_at_index(
+            static_cast<uint32_t>(index_array->get(i).Number()),
+            static_cast<int64_t>(operation_id_array->get(i).Number()),
+            enable_reuse_notification);
+      }
+    }
+    return;
+  }
   // Note: here we need to check if component_at_indexes_ is callable to ensure
   // the compatibility with lower versions of the front-end framework.
   if (!component_at_indexes_.IsCallable() ||
@@ -262,6 +302,15 @@ void ListElement::EnqueueComponent(int32_t sign) {
               });
   if (ssr_helper_ && !ssr_helper_->HasHydrate()) {
     ssr_helper_->OnEnqueueComponent(sign);
+    return;
+  }
+  // Native item provider's recycling callback (optional). If
+  // installed without an `enqueue_component` callback, recycling
+  // notifications are silently dropped — the embedder has opted out.
+  if (native_item_provider_.component_at_index) {
+    if (native_item_provider_.enqueue_component) {
+      native_item_provider_.enqueue_component(sign);
+    }
     return;
   }
   if (element_manager_ && element_manager_->DisableListCallbackIfDetached() &&
