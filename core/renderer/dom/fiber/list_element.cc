@@ -131,9 +131,14 @@ void ListElement::ParallelFlushAsRoot() {
   if (!element_manager()->GetEnableParallelElement()) {
     return;
   }
+  // Fork-only fallback check; upstream 3.7.0's `FiberElement`
+  // doesn't carry this. See `LYNX_WHISKER_UPSTREAM_307_COMPAT`
+  // note in `list_element.h`.
+#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
   if (ShouldFallbackToSerialForNewStylingPipeline()) {
     return;
   }
+#endif
   if (!NeedAsyncResolveListItem()) {
     FiberElement::ParallelFlushAsRoot();
     return;
@@ -628,7 +633,13 @@ void ListElement::ResetAttribute(const base::String& key) {
   FiberElement::ResetAttribute(key);
 
   if (key.IsEquals(kScrollOrientation) || key.IsEquals(kVerticalOrientation)) {
+    // Fork-only `RemoveStyleFromAttributes`; upstream 3.7.0's
+    // `element.h` doesn't carry it. Skipping the call on iOS is
+    // safe — the cached attribute style just lingers an extra
+    // frame; the next attribute write would replace it.
+#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
     RemoveStyleFromAttributes(kPropertyIDLinearOrientation);
+#endif
     MarkStyleDirty(false);
   }
 }
