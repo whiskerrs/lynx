@@ -113,7 +113,19 @@ class ListElement : public FiberElement, public tasm::ListNode {
 
   bool is_list() const override { return true; }
 
+  // The four `Peek/Cache/RemoveCommittedStyleFromAttributes` overrides
+  // below belong to the fork's new styling pipeline (declared `virtual`
+  // in fork's `element.h`). Upstream Lynx 3.7.0 — which the iOS
+  // CocoaPods source pod is built against — has no such virtuals, so
+  // the `override` keyword would fire "only virtual member functions
+  // can be marked 'override'" on iOS xcframework builds. Gate on
+  // `LYNX_WHISKER_UPSTREAM_307_COMPAT` (defined by the iOS xframework
+  // build script's overlay step) so the same header compiles in both
+  // environments. Drop the gate once iOS is built from the fork tree
+  // (i.e. once Whisker stops pinning to upstream `Lynx 3.7.0` CocoaPods).
+#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
   const StyleMap* PeekCommittedStylesFromAttributes() const override;
+#endif
 
   void TickElement(fml::TimePoint& time) override;
   void AppendComponentInfo(std::unique_ptr<ListComponentInfo> info) override {}
@@ -242,11 +254,15 @@ class ListElement : public FiberElement, public tasm::ListNode {
   void SetAttributeInternal(const base::String& key,
                             const lepus::Value& value) override;
   void ResetAttribute(const base::String& key) override;
+  // See the LYNX_WHISKER_UPSTREAM_307_COMPAT comment near the
+  // first `PeekCommittedStylesFromAttributes` declaration above.
+#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
   void CacheCommittedStyleFromAttributes(CSSPropertyID id,
                                          const CSSValue& value) override;
   void CacheCommittedStyleFromAttributes(CSSPropertyID id,
                                          const lepus::Value& value) override;
   void RemoveCommittedStyleFromAttributes(CSSPropertyID id) override;
+#endif
 
  private:
   void ResolveEnableNativeList();

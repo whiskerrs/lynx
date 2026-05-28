@@ -90,6 +90,13 @@ void ListElement::OnNodeAdded(FiberElement* child) {
   }
 }
 
+// These four methods belong to the fork's new styling pipeline.
+// Upstream Lynx 3.7.0 (the iOS CocoaPods source pod) has no matching
+// virtuals in `element.h`, so they would fail "only virtual member
+// functions can be marked 'override'" if compiled. See the header
+// comment near `LYNX_WHISKER_UPSTREAM_307_COMPAT` for the migration
+// path (drop the gate once iOS builds from the fork tree).
+#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
 const StyleMap* ListElement::PeekCommittedStylesFromAttributes() const {
   if (!committed_styles_from_attributes_.has_value()) {
     return nullptr;
@@ -117,6 +124,7 @@ void ListElement::RemoveCommittedStyleFromAttributes(CSSPropertyID id) {
     committed_styles_from_attributes_.reset();
   }
 }
+#endif  // !LYNX_WHISKER_UPSTREAM_307_COMPAT
 
 void ListElement::ParallelFlushAsRoot() {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, LIST_PARALLEL_FLUSH_AS_ROOT);

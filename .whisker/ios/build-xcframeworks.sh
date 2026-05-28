@@ -178,6 +178,12 @@ XCODE_COMMON=(
   CODE_SIGNING_ALLOWED=NO
   CODE_SIGNING_REQUIRED=NO
   CODE_SIGN_IDENTITY=
+  # Tell the overlayed fork sources (list_element.h/.cc) to skip the
+  # `Peek/Cache/RemoveCommittedStyleFromAttributes` overrides — those
+  # virtuals exist only in the fork's `element.h`, which we don't
+  # overlay (upstream 3.7.0 CocoaPods is the iOS base). See the
+  # `LYNX_WHISKER_UPSTREAM_307_COMPAT` comment in `list_element.h`.
+  "GCC_PREPROCESSOR_DEFINITIONS=\$(inherited) LYNX_WHISKER_UPSTREAM_307_COMPAT=1"
 )
 
 echo "==> xcodebuild iOS device"
