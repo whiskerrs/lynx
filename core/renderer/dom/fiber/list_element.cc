@@ -222,51 +222,17 @@ int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
   // path. Enables embedders without a JS framework to drive the list
   // directly. See `ListNativeItemProvider` in list_element.h.
   //
-  // **Contract.** The embedder's callback is responsible for:
-  //   1. attaching the item to this list as a child (typically via
-  //      `lynx_element_append_child(list, item)`, so the embedder's
-  //      own parent-child / event-propagation mirror stays in sync),
-  //   2. returning the item's `impl_id`.
-  //
-  // The framework then mirrors the remaining bit of
-  // `ListElementSSRHelper::ComponentAtIndexInSSR`'s side-effects on
-  // the embedder's behalf: builds a per-item PipelineOptions and
-  // fires `OnPatchFinish` so the layout pass picks the item up.
-  // Without this `OnPatchFinish`, the lepus path's JS-side
-  // `componentAtIndex` would have done the equivalent in script-land
-  // and the framework's layout pass would never see the new child.
+  // **Contract.** The embedder's callback is responsible for both
+  // attaching the item to this list (typically via
+  // `lynx_element_append_child(list, item)` so its own parent-child
+  // / event-propagation mirror stays in sync) and returning the
+  // item's `impl_id`. The framework treats it the same as the
+  // lepus path from here on — the outer layout traversal (entered
+  // via the caller of `ComponentAtIndex`) is responsible for
+  // pumping the item through the pipeline.
   if (native_item_provider_.component_at_index) {
-    int32_t sign = native_item_provider_.component_at_index(
+    return native_item_provider_.component_at_index(
         index, operationId, enable_reuse_notification);
-    if (sign == list::kInvalidIndex) {
-      return sign;
-    }
-    if (element_manager_ != nullptr) {
-      auto* node = element_manager_->node_manager()->Get(sign);
-      if (node != nullptr) {
-        auto* item = static_cast<FiberElement*>(node);
-        auto options = std::make_shared<PipelineOptions>();
-        options->trigger_layout_ = true;
-        options->operation_id = operationId;
-        options->list_comp_id_ = item->impl_id();
-        if (DisableListPlatformImplementation()) {
-          options->list_id_ = impl_id();
-        }
-        // Tell the post-layout `TickListIfNeeded` to call
-        // `OnListElementUpdated` on this list — without it, the
-        // decoupled `ListMediator::OnLayoutChildren` never runs and
-        // subsequent `ComponentAtIndex` calls never happen, so only
-        // index 0 ever lays out and the list sits empty. The lepus
-        // path gets this implicitly because layout traversal
-        // (`UpdateLayoutInfoRecursively`) pushes every is_list()
-        // element it touches; the native_provider path only
-        // re-enters the list element once per item, so we mark it
-        // here explicitly.
-        options->updated_list_elements_.emplace_back(impl_id());
-        element_manager_->OnPatchFinish(options, item);
-      }
-    }
-    return sign;
   }
   if (element_manager_ && element_manager_->DisableListCallbackIfDetached() &&
       IsDetached()) {
