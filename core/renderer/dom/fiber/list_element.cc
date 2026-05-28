@@ -252,6 +252,17 @@ int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
         if (DisableListPlatformImplementation()) {
           options->list_id_ = impl_id();
         }
+        // Tell the post-layout `TickListIfNeeded` to call
+        // `OnListElementUpdated` on this list — without it, the
+        // decoupled `ListMediator::OnLayoutChildren` never runs and
+        // subsequent `ComponentAtIndex` calls never happen, so only
+        // index 0 ever lays out and the list sits empty. The lepus
+        // path gets this implicitly because layout traversal
+        // (`UpdateLayoutInfoRecursively`) pushes every is_list()
+        // element it touches; the native_provider path only
+        // re-enters the list element once per item, so we mark it
+        // here explicitly.
+        options->updated_list_elements_.emplace_back(impl_id());
         element_manager_->OnPatchFinish(options, item);
       }
     }
