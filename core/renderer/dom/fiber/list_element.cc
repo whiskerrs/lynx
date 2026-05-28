@@ -15,11 +15,24 @@
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
 #include "core/renderer/ui_component/list/list_types.h"
+#include "core/runtime/lepusng/jsvalue_helper.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 
 namespace lynx {
 namespace tasm {
+
+void ListElement::visitor(void* rt, void* func, uint64_t trace_tool) {
+  LEPUSRuntime* runtime = reinterpret_cast<LEPUSRuntime*>(rt);
+  LEPUS_MarkFunc* mark_func = reinterpret_cast<LEPUS_MarkFunc*>(func);
+  LEPUSValue v = WRAP_AS_JS_VALUE(component_at_index_.value());
+  mark_func(runtime, v, trace_tool);
+  v = WRAP_AS_JS_VALUE(component_at_indexes_.value());
+  mark_func(runtime, v, trace_tool);
+  v = WRAP_AS_JS_VALUE(enqueue_component_.value());
+  mark_func(runtime, v, trace_tool);
+  FiberElement::visitor(rt, reinterpret_cast<void*>(mark_func), trace_tool);
+}
 
 ListElement::ListElement(ElementManager* manager, const base::String& tag,
                          const lepus::Value& component_at_index,

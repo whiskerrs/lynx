@@ -17,7 +17,6 @@
 #include "core/renderer/ui_component/list/list_container_delegate_internal.h"
 #include "core/renderer/ui_component/list/mediator/list_mediator.h"
 #include "core/renderer/ui_wrapper/layout/list_node.h"
-#include "core/runtime/lepusng/jsvalue_helper.h"
 
 namespace lynx {
 namespace tasm {
@@ -100,17 +99,11 @@ class ListElement : public FiberElement, public tasm::ListNode {
     return fml::AdoptRef<FiberElement>(
         new ListElement(*this, clone_resolved_props));
   }
-  void visitor(void* rt, void* func, uint64_t trace_tool) override {
-    LEPUSRuntime* runtime = reinterpret_cast<LEPUSRuntime*>(rt);
-    LEPUS_MarkFunc* mark_func = reinterpret_cast<LEPUS_MarkFunc*>(func);
-    LEPUSValue v = WRAP_AS_JS_VALUE(component_at_index_.value());
-    mark_func(runtime, v, trace_tool);
-    v = WRAP_AS_JS_VALUE(component_at_indexes_.value());
-    mark_func(runtime, v, trace_tool);
-    v = WRAP_AS_JS_VALUE(enqueue_component_.value());
-    mark_func(runtime, v, trace_tool);
-    FiberElement::visitor(rt, reinterpret_cast<void*>(mark_func), trace_tool);
-  }
+  // Body moved to .cc so the header doesn't have to drag in
+  // `jsvalue_helper.h` (and its `quickjs/include/trace-gc.h`), which
+  // lets embedders without the QuickJS header set include
+  // `list_element.h` cleanly.
+  void visitor(void* rt, void* func, uint64_t trace_tool) override;
 
   ~ListElement() override = default;
 
