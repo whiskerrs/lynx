@@ -111,6 +111,60 @@ find "$BUILD_DIR/Pods" -name '*.xcconfig' -print0 | \
     echo "    patched $(basename "$f")"
   done
 
+# ----- Patch upstream modp_b64 symbol drift ----------------------------------
+
+# Lynx 3.7.0's bundled modp_b64 library prefixes every public symbol
+# with `lynx_` (modp_b64.h: `#define modp_b64_decode lynx_modp_b64_decode`
+# etc.) to avoid collisions when an embedder also links a stock
+# modp_b64. The defines are wired up correctly inside `modp_b64.c`
+# itself, but `core/runtime/lepus/bindings/renderer_functions.cc:1332`
+# was missed and still calls `modp_b64_decode` directly — which post-
+# rename is no longer a visible symbol. The pinned upstream pod ships
+# this broken file; clang refuses to link. Patch the one call site
+# here so the rest of the xcodebuild step has a chance.
+echo "==> Patch modp_b64 symbol drift in renderer_functions.cc"
+RF="$BUILD_DIR/Pods/Lynx/core/runtime/lepus/bindings/renderer_functions.cc"
+if [ -f "$RF" ]; then
+  /usr/bin/perl -i -pe 's/(?<![_A-Za-z0-9])modp_b64_decode\b/lynx_modp_b64_decode/g' "$RF"
+  echo "    patched $(basename "$RF")"
+fi
+
+# ----- Overlay fork-modified Lynx core sources -------------------------------
+
+# Upstream Lynx 3.7.0 from CocoaPods is what `pod install` just laid
+# down under `Pods/Lynx/`. The whisker fork carries a small set of
+# additive changes inside `core/renderer/dom/fiber/` that need to ship
+# in the iOS xcframework — most notably the `ListNativeItemProvider`
+# mechanism (whiskerrs/lynx#9) gating the `<list>` native-driver path
+# Whisker drives. Copy each modified file in to override the
+# corresponding pod source before xcodebuild compiles it.
+#
+# This overlay approach is the minimum invasion that keeps the
+# upstream CocoaPods source as the base and only swaps the files the
+# fork actually touches. Doing the full `cocoapods_publish_helper.py`
+# `--prepare-source` / `--publish_local` flow would buy us a clean
+# `pod 'Lynx', '3.7.0-whisker.X'` resolution, but requires
+# `geniospkg` (Bytedance-internal) and a GN tree set up under
+# `tools_shared/` — neither of which is available on github-hosted
+# macos-14 runners.
+echo "==> Overlay fork-modified Lynx sources"
+FORK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+for rel in \
+    core/renderer/dom/fiber/list_element.h \
+    core/renderer/dom/fiber/list_element.cc; do
+  src="$FORK_ROOT/$rel"
+  dst="$BUILD_DIR/Pods/Lynx/$rel"
+  if [ ! -f "$src" ]; then
+    echo "::error::fork source missing: $src"
+    exit 1
+  fi
+  if [ ! -f "$dst" ]; then
+    echo "::error::upstream pod source missing: $dst (did the layout change?)"
+    exit 1
+  fi
+  cp -v "$src" "$dst"
+done
+
 # ----- xcodebuild for device + simulator -------------------------------------
 
 XCODE_COMMON=(
