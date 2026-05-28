@@ -162,7 +162,9 @@ for rel in \
     echo "::error::upstream pod source missing: $dst (did the layout change?)"
     exit 1
   fi
-  cp -v "$src" "$dst"
+  # `cp -f` because CocoaPods stages pod sources read-only — plain
+  # `cp` would hit `Permission denied` overwriting them.
+  cp -fv "$src" "$dst"
 done
 
 # ----- xcodebuild for device + simulator -------------------------------------
