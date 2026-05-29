@@ -1,6 +1,12 @@
 # Managed by Habitat
 /platform/android/gradle/wrapper/gradle-6.7.1-all.zip
 /build
+# Exception: this single header is a checked-in source file, not a build
+# artifact. The Chromium-derived `build_config.h` defines OS_*/COMPILER_*
+# macros referenced from `base/include/fml/...` and across the rest of
+# Lynx. Without it on a fresh checkout, iOS xcframework builds fail to
+# find `'build/build_config.h'`.
+!/build/build_config.h
 /buildtools
 /third_party/quickjs/src
 /third_party/libcxx
