@@ -232,23 +232,25 @@ jobs:
           # 1.16.2 build succeeds; 1.15.2 reproduces the CI failure.
           gem install cocoapods -v 1.16.2 --no-document
 
-      - name: Python Setup (for hab + py_deps)
+      - name: Python Setup (for tools/hab sync)
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
-      - name: Install Lynx Python deps + run habitat sync
-        # Mirrors the Android job's habitat bootstrap. iOS xcframework
-        # builds reference `third_party/modp_b64/*`,
+      - name: Sync third_party deps (habitat)
+        # iOS xcframework builds reference `third_party/modp_b64/*`,
         # `third_party/rapidjson/*`, etc.; those subtrees are pulled in
         # via `tools/hab sync`, not committed to the repo, so a fresh
         # `actions/checkout` lacks them and the compile fails on the
         # first `#include "third_party/..."` it hits.
-        uses: ./.github/actions/common-deps
-        with:
-          cache-backend: github
-
-      - name: Sync third_party deps (habitat)
+        #
+        # The Android job uses `.github/actions/common-deps` for this,
+        # but that composite action hardcodes `lynx/tools/ci/...` paths
+        # — Android checks out the repo under `${{ workspace }}/lynx/`,
+        # whereas this iOS job checks out at the workspace root, so the
+        # composite would fail. Just invoke hab directly; the first
+        # build pays the network fetch, later runs can add a manual
+        # actions/cache step if the fetch becomes expensive.
         run: tools/hab sync . -f --target dev --target-only
 
       - name: Resolve release version
