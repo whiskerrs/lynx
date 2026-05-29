@@ -22,8 +22,8 @@
 
 set -euo pipefail
 
-LYNX_VERSION="${LYNX_VERSION:-3.7.0}"
-PRIMJS_VERSION="${PRIMJS_VERSION:-3.7.0}"
+LYNX_VERSION="${LYNX_VERSION:-3.8.0}"
+PRIMJS_VERSION="${PRIMJS_VERSION:-3.8.0}"
 BUILD_DIR="${BUILD_DIR:-$(pwd)/lynx-build}"
 OUT_DIR="${OUT_DIR:-$(pwd)/lynx-ios}"
 

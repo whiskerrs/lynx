@@ -31,7 +31,7 @@
     "path": "."
   },
   "summary": "The framework of Lynx.",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "testspecs": [
     {
       "name": "UnitTests",
@@ -3794,7 +3794,7 @@
         "PrimJS/napi/jsc": [],
         "PrimJS/napi/quickjs": [],
         "PrimJS/quickjs": [
-          "3.7.0"
+          "3.8.0"
         ]
       }
     },
