@@ -224,7 +224,13 @@ jobs:
         run: |
           set -e
           brew install xcodegen
-          gem install cocoapods -v 1.15.2 --no-document
+          # 1.16.2 fixes a bug where `:path` pods' `private_header_files`
+          # entries with a path containing a top-level dir named `build/`
+          # (e.g. `build/build_config.h` in fork's LynxBase.podspec) weren't
+          # being copied to the framework's PrivateHeaders, causing
+          # `'build/build_config.h' file not found` at compile time. Local
+          # 1.16.2 build succeeds; 1.15.2 reproduces the CI failure.
+          gem install cocoapods -v 1.16.2 --no-document
 
       - name: Resolve release version
         id: ver
