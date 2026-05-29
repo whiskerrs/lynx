@@ -290,7 +290,26 @@ jobs:
         # fail. Invoke hab directly; the first build pays the network
         # fetch (~30s), later runs can add a manual actions/cache
         # step if the fetch becomes expensive.
-        run: tools/hab sync . -f
+        #
+        # Retry: `hab sync` hits services.gradle.org and lynx-family
+        # /buildtools GitHub Releases over multi-part HTTPS, and macOS
+        # runners have been observed to SSL-timeout on these during
+        # release pushes (an `SSLWantReadError` after a successful
+        # partial download). The fetcher is not idempotent inside a
+        # single invocation, so wrap the whole call in a 5-attempt
+        # backoff to soak up brief CDN flakiness.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if tools/hab sync . -f; then
+              echo "hab sync succeeded on attempt $attempt"
+              exit 0
+            fi
+            backoff=$((attempt * 15))
+            echo "hab sync attempt $attempt failed — sleeping ${backoff}s before retry"
+            sleep $backoff
+          done
+          echo "hab sync failed after 5 attempts" >&2
+          exit 1
 
       - name: Resolve release version
         id: ver
