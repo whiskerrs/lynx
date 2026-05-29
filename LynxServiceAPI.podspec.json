@@ -40,7 +40,9 @@
         "service_api/service_api.h",
         "service_api/service_api_services.h",
         "service_api/service_api_utils.h",
-        "service_api/service_lazy_load.h"
+        "service_api/service_lazy_load.h",
+        "service_api/services/trail/trail_service.h",
+        "service_api/services/trail/trail_setting_key.h"
       ],
       "source_files": [
         "platform/darwin/ios/lynx_service_api/LynxServiceLogProtocol.h",
@@ -54,7 +56,9 @@
         "service_api/service_api.h",
         "service_api/service_api_services.h",
         "service_api/service_api_utils.h",
-        "service_api/service_lazy_load.h"
+        "service_api/service_lazy_load.h",
+        "service_api/services/trail/trail_service.h",
+        "service_api/services/trail/trail_setting_key.h"
       ]
     }
   ]
