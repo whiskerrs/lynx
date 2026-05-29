@@ -15,6 +15,7 @@
 #include "core/renderer/template_assembler.h"
 #include "core/renderer/trace/renderer_trace_event_def.h"
 #include "core/renderer/ui_component/list/list_types.h"
+#include "core/runtime/lepusng/jsvalue_helper.h"
 #include "core/services/feature_count/feature_counter.h"
 #include "core/services/long_task_timing/long_task_monitor.h"
 
@@ -44,6 +45,18 @@ void SetTemplateCallbackAttribute(lepus::Value* target,
 }
 
 }  // namespace
+
+void ListElement::visitor(void* rt, void* func, uint64_t trace_tool) {
+  LEPUSRuntime* runtime = reinterpret_cast<LEPUSRuntime*>(rt);
+  LEPUS_MarkFunc* mark_func = reinterpret_cast<LEPUS_MarkFunc*>(func);
+  LEPUSValue v = WRAP_AS_JS_VALUE(component_at_index_.value());
+  mark_func(runtime, v, trace_tool);
+  v = WRAP_AS_JS_VALUE(component_at_indexes_.value());
+  mark_func(runtime, v, trace_tool);
+  v = WRAP_AS_JS_VALUE(enqueue_component_.value());
+  mark_func(runtime, v, trace_tool);
+  FiberElement::visitor(rt, reinterpret_cast<void*>(mark_func), trace_tool);
+}
 
 ListElement::ListElement(ElementManager* manager, const base::String& tag,
                          const lepus::Value& component_at_index,
@@ -229,6 +242,52 @@ int32_t ListElement::ComponentAtIndex(uint32_t index, int64_t operationId,
     // to add item elements to the list element.
     return ssr_helper_->ComponentAtIndexInSSR(index, operationId);
   }
+  // Native (non-lepus) item provider takes priority over the lepus
+  // path. Enables embedders without a JS framework to drive the list
+  // directly. See `ListNativeItemProvider` in list_element.h.
+  //
+  // **Contract.** The embedder's callback is responsible for both
+  // attaching the item to this list (typically via
+  // `lynx_element_append_child(list, item)` so its own parent-child
+  // / event-propagation mirror stays in sync) and returning the
+  // item's `impl_id`. The framework treats it the same as the
+  // lepus path from here on — the outer layout traversal (entered
+  // via the caller of `ComponentAtIndex`) is responsible for
+  // pumping the item through the pipeline.
+  if (native_item_provider_.component_at_index) {
+    int32_t sign = native_item_provider_.component_at_index(
+        index, operationId, enable_reuse_notification);
+    if (sign != list::kInvalidIndex && element_manager_ != nullptr) {
+      auto* node = element_manager_->node_manager()->Get(sign);
+      if (node != nullptr) {
+        auto* item = static_cast<FiberElement*>(node);
+        auto options = std::make_shared<PipelineOptions>();
+        options->trigger_layout_ = true;
+        options->operation_id = operationId;
+        options->list_comp_id_ = item->impl_id();
+        if (DisableListPlatformImplementation()) {
+          options->list_id_ = impl_id();
+        }
+        // Resolve style / kick layout for the freshly-appended subtree.
+        element_manager_->OnPatchFinish(options, item);
+        // Fire the bind-complete signal synchronously so the mediator
+        // attaches the item_holder to `attached_children_`. The outer
+        // `OnLayoutChildren`'s `StartInterceptListElementUpdated()`
+        // keeps `intercept_depth > 0`, so the recursive
+        // `OnLayoutChildren(true, index)` call inside
+        // `OnFinishBindItemHolder` is suppressed. The final
+        // `HandleLayoutOrScrollResult` (run from `OnLayoutAfter`
+        // once `Fill` returns) then iterates `attached_children_`
+        // and pushes each `InsertListItemPaintingNode` to the
+        // platform UI. Without this call, the C++ side binds
+        // item_holders to elements but the Java
+        // `UIListContainer` never receives `insertListItemNode`
+        // — items render to nothing.
+        OnComponentFinished(item, options);
+      }
+    }
+    return sign;
+  }
   if (element_manager_ && element_manager_->DisableListCallbackIfDetached() &&
       IsDetached()) {
     return list::kInvalidIndex;
@@ -257,6 +316,39 @@ void ListElement::ComponentAtIndexes(
               [this](lynx::perfetto::EventContext ctx) {
                 UpdateTraceDebugInfo(ctx.event());
               });
+  // Native item provider takes priority. If the embedder supplied the
+  // batch callback we use it directly; otherwise we loop the single
+  // `component_at_index` so the embedder doesn't have to implement the
+  // batch variant just to get correct behaviour.
+  if (native_item_provider_.component_at_index) {
+    const size_t index_size = index_array->size();
+    const size_t operation_id_size = operation_id_array->size();
+    if (!index_size || !operation_id_size || index_size != operation_id_size) {
+      return;
+    }
+    if (native_item_provider_.component_at_indexes) {
+      std::vector<uint32_t> indices;
+      std::vector<int64_t> operation_ids;
+      indices.reserve(index_size);
+      operation_ids.reserve(index_size);
+      for (size_t i = 0; i < index_size; ++i) {
+        indices.push_back(
+            static_cast<uint32_t>(index_array->get(i).Number()));
+        operation_ids.push_back(
+            static_cast<int64_t>(operation_id_array->get(i).Number()));
+      }
+      native_item_provider_.component_at_indexes(indices, operation_ids,
+                                                  enable_reuse_notification);
+    } else {
+      for (size_t i = 0; i < index_size; ++i) {
+        native_item_provider_.component_at_index(
+            static_cast<uint32_t>(index_array->get(i).Number()),
+            static_cast<int64_t>(operation_id_array->get(i).Number()),
+            enable_reuse_notification);
+      }
+    }
+    return;
+  }
   // Note: here we need to check if component_at_indexes_ is callable to ensure
   // the compatibility with lower versions of the front-end framework.
   if (!component_at_indexes_.IsCallable() ||
@@ -292,6 +384,15 @@ void ListElement::EnqueueComponent(int32_t sign) {
               });
   if (ssr_helper_ && !ssr_helper_->HasHydrate()) {
     ssr_helper_->OnEnqueueComponent(sign);
+    return;
+  }
+  // Native item provider's recycling callback (optional). If
+  // installed without an `enqueue_component` callback, recycling
+  // notifications are silently dropped — the embedder has opted out.
+  if (native_item_provider_.component_at_index) {
+    if (native_item_provider_.enqueue_component) {
+      native_item_provider_.enqueue_component(sign);
+    }
     return;
   }
   if (element_manager_ && element_manager_->DisableListCallbackIfDetached() &&
