@@ -34,6 +34,27 @@ public class PropsUpdater {
     PRE_REGISTER_MAP.put(settable.getClass().getName(), settable);
   }
 
+  /**
+   * Whisker-fork addition (v3.7.0-whisker.4).
+   *
+   * Register a Settable against a specific target LynxBaseUI class.
+   * Bypasses the "{@code <targetClass>$$PropsSetter}" naming
+   * convention that the bare {@link #registerSetter(Settable)}
+   * overload requires of the registered class — useful when the
+   * codegen layer (e.g. Whisker's KSP-emitted setters) chooses a
+   * different name or package for the generated class.
+   *
+   * The key used for lookup is the same one
+   * {@link #findGeneratedSetter(Class)} consults: the target UI's
+   * fully-qualified class name suffixed with {@code "$$PropsSetter"}.
+   * Existing reflection-based lookup paths continue to work
+   * unchanged.
+   */
+  public static void registerSetter(
+      Class<? extends LynxBaseUI> targetClass, Settable settable) {
+    PRE_REGISTER_MAP.put(targetClass.getName() + "$$PropsSetter", settable);
+  }
+
   public static void clear() {
     PropsSetterCache.clear();
     SHADOW_NODE_SETTER_MAP.clear();
