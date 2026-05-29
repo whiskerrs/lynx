@@ -262,6 +262,13 @@ jobs:
             ../../core/renderer/css/layout_property.h \
             css_defines_sha256.txt
 
+      - name: Generate lynx_config headers (run gen_config codegen)
+        # `core/template_bundle/template_codec/binary_decoder/lynx_config_auto_gen.{h,cc}`
+        # and friends are produced by `tools/config/gen_config.py`.
+        # Same story as the CSS generator — GN invokes it, CocoaPods
+        # doesn't, so we run it explicitly here.
+        run: python3 tools/config/check_and_run.py
+
       - name: Sync third_party deps (habitat)
         # iOS xcframework builds reference `third_party/modp_b64/*`,
         # `third_party/rapidjson/*`, etc.; those subtrees are pulled in
