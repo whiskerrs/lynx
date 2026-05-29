@@ -244,14 +244,21 @@ jobs:
         # `actions/checkout` lacks them and the compile fails on the
         # first `#include "third_party/..."` it hits.
         #
-        # The Android job uses `.github/actions/common-deps` for this,
-        # but that composite action hardcodes `lynx/tools/ci/...` paths
-        # — Android checks out the repo under `${{ workspace }}/lynx/`,
-        # whereas this iOS job checks out at the workspace root, so the
-        # composite would fail. Just invoke hab directly; the first
-        # build pays the network fetch, later runs can add a manual
-        # actions/cache step if the fetch becomes expensive.
-        run: tools/hab sync . -f --target dev --target-only
+        # The Android job uses `--target dev --target-only` (via
+        # `.github/actions/common-deps`), but that filter excludes
+        # generic deps like modp_b64 that iOS still needs at compile
+        # time. Sync without the `--target` filter to fetch every
+        # entry in `dependencies/DEPS` that the current platform
+        # satisfies the `condition` predicate for.
+        #
+        # `common-deps` is the Android job's compositie action but it
+        # hardcodes `lynx/tools/ci/...` paths — Android checks out the
+        # repo under `${{ workspace }}/lynx/`, whereas this iOS job
+        # checks out at the workspace root, so the composite would
+        # fail. Invoke hab directly; the first build pays the network
+        # fetch (~30s), later runs can add a manual actions/cache
+        # step if the fetch becomes expensive.
+        run: tools/hab sync . -f
 
       - name: Resolve release version
         id: ver
