@@ -90,13 +90,6 @@ void ListElement::OnNodeAdded(FiberElement* child) {
   }
 }
 
-// These four methods belong to the fork's new styling pipeline.
-// Upstream Lynx 3.7.0 (the iOS CocoaPods source pod) has no matching
-// virtuals in `element.h`, so they would fail "only virtual member
-// functions can be marked 'override'" if compiled. See the header
-// comment near `LYNX_WHISKER_UPSTREAM_307_COMPAT` for the migration
-// path (drop the gate once iOS builds from the fork tree).
-#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
 const StyleMap* ListElement::PeekCommittedStylesFromAttributes() const {
   if (!committed_styles_from_attributes_.has_value()) {
     return nullptr;
@@ -124,21 +117,15 @@ void ListElement::RemoveCommittedStyleFromAttributes(CSSPropertyID id) {
     committed_styles_from_attributes_.reset();
   }
 }
-#endif  // !LYNX_WHISKER_UPSTREAM_307_COMPAT
 
 void ListElement::ParallelFlushAsRoot() {
   TRACE_EVENT(LYNX_TRACE_CATEGORY, LIST_PARALLEL_FLUSH_AS_ROOT);
   if (!element_manager()->GetEnableParallelElement()) {
     return;
   }
-  // Fork-only fallback check; upstream 3.7.0's `FiberElement`
-  // doesn't carry this. See `LYNX_WHISKER_UPSTREAM_307_COMPAT`
-  // note in `list_element.h`.
-#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
   if (ShouldFallbackToSerialForNewStylingPipeline()) {
     return;
   }
-#endif
   if (!NeedAsyncResolveListItem()) {
     FiberElement::ParallelFlushAsRoot();
     return;
@@ -633,13 +620,7 @@ void ListElement::ResetAttribute(const base::String& key) {
   FiberElement::ResetAttribute(key);
 
   if (key.IsEquals(kScrollOrientation) || key.IsEquals(kVerticalOrientation)) {
-    // Fork-only `RemoveStyleFromAttributes`; upstream 3.7.0's
-    // `element.h` doesn't carry it. Skipping the call on iOS is
-    // safe — the cached attribute style just lingers an extra
-    // frame; the next attribute write would replace it.
-#if !defined(LYNX_WHISKER_UPSTREAM_307_COMPAT)
     RemoveStyleFromAttributes(kPropertyIDLinearOrientation);
-#endif
     MarkStyleDirty(false);
   }
 }
