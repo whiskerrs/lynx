@@ -373,7 +373,7 @@
       ],
       "pod_target_xcconfig": {
         "GCC_PREPROCESSOR_DEFINITIONS": "ENABLE_INSPECTOR=1                                         HOST_OSTYPE=HOST_IOS                                         LYNX_ENABLE_FROZEN_MODE=0                                         NDEBUG=1                                         OS_IOS=1                                         OS_POSIX=1                                         RAPIDJSON_HAS_STDSTRING=1                                         RAPIDJSON_NAMESPACE=lynx::rapidjson                                         RAPIDJSON_NAMESPACE_BEGIN=\"namespace lynx{namespace rapidjson{\"                                         RAPIDJSON_NAMESPACE_END=\"}};namespace rapidjson=::lynx::rapidjson;\"",
-        "HEADER_SEARCH_PATHS": "\"${PODS_ROOT}/LynxBase/lynx\"                                \"${PODS_ROOT}/LynxBase\"                                \"${PODS_TARGET_SRCROOT}/\"                                \"/Users/runner/work/lynx/lynx/lynx\"",
+        "HEADER_SEARCH_PATHS": "\"${PODS_ROOT}/LynxBase/lynx\"                                \"${PODS_ROOT}/LynxBase\"                                \"${PODS_TARGET_SRCROOT}/\"                                \"${PODS_TARGET_SRCROOT}\"",
         "OTHER_CPLUSPLUSFLAGS": "-fno-aligned-allocation -std=gnu++17 -std=gnu++17"
       },
       "dependencies": {

@@ -16,7 +16,7 @@
   "pod_target_xcconfig": {
     "CLANG_CXX_LANGUAGE_STANDARD": "gnu++17",
     "GCC_PREPROCESSOR_DEFINITIONS": "NDEBUG=1                                       OS_IOS=1",
-    "HEADER_SEARCH_PATHS": "\"/Users/runner/work/lynx/lynx/lynx\"",
+    "HEADER_SEARCH_PATHS": "\"${PODS_TARGET_SRCROOT}\"",
     "OTHER_CPLUSPLUSFLAGS": "-fno-aligned-allocation -fno-c++-static-destructors -std=gnu++17"
   },
   "requires_arc": true,
