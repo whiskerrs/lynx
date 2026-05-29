@@ -244,6 +244,24 @@ jobs:
         # No module named 'yaml'`.
         run: python3 -m pip install -r tools/vpython_tools/requirements.txt --break-system-packages --retries 10 --timeout 60
 
+      - name: Generate CSS property headers (run codegen scripts)
+        # `core/renderer/css/css_property_id.h` (and ~15 other
+        # gitignored generated headers in that dir) are produced by
+        # `tools/css_generator/css_parser_generator.py` + friends, which
+        # the GN build invokes via `exec_script` from
+        # `core/renderer/css/BUILD.gn`. CocoaPods doesn't use GN, so
+        # these never get generated through the iOS build chain.
+        # Upstream Lynx ships them pre-generated in the release zip;
+        # the fork tree's pod source ships only the generator scripts,
+        # so we run them here.
+        working-directory: tools/css_generator
+        run: |
+          python3 css_parser_generator.py
+          python3 generate_layout_property.py \
+            css_defines \
+            ../../core/renderer/css/layout_property.h \
+            css_defines_sha256.txt
+
       - name: Sync third_party deps (habitat)
         # iOS xcframework builds reference `third_party/modp_b64/*`,
         # `third_party/rapidjson/*`, etc.; those subtrees are pulled in
