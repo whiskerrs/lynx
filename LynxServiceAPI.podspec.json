@@ -24,7 +24,7 @@
     "path": "."
   },
   "summary": "Service API provided for frameworks such as Lynx/LynxBase",
-  "version": "3.7.0",
+  "version": "3.8.0",
   "subspecs": [
     {
       "name": "Core",
