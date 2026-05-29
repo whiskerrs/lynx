@@ -232,6 +232,25 @@ jobs:
           # 1.16.2 build succeeds; 1.15.2 reproduces the CI failure.
           gem install cocoapods -v 1.16.2 --no-document
 
+      - name: Python Setup (for hab + py_deps)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Lynx Python deps + run habitat sync
+        # Mirrors the Android job's habitat bootstrap. iOS xcframework
+        # builds reference `third_party/modp_b64/*`,
+        # `third_party/rapidjson/*`, etc.; those subtrees are pulled in
+        # via `tools/hab sync`, not committed to the repo, so a fresh
+        # `actions/checkout` lacks them and the compile fails on the
+        # first `#include "third_party/..."` it hits.
+        uses: ./.github/actions/common-deps
+        with:
+          cache-backend: github
+
+      - name: Sync third_party deps (habitat)
+        run: tools/hab sync . -f --target dev --target-only
+
       - name: Resolve release version
         id: ver
         env:
