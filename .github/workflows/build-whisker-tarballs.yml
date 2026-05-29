@@ -247,20 +247,33 @@ jobs:
 
       - name: Build Lynx + PrimJS xcframeworks
         # See .whisker/ios/build-xcframeworks.sh — sets up a carrier
-        # Xcode project, pod-installs the upstream Lynx 3.7.0 +
-        # PrimJS 3.7.0 source pods, xcodebuilds for iOS device +
+        # Xcode project, pod-installs Lynx via the fork-controlled
+        # podspec (path => fork tree), xcodebuilds for iOS device +
         # simulator with `use_frameworks!` (dynamic), then assembles
         # 4 xcframeworks. Lynx's category-method registration relies
         # on dynamic linkage (see the comment in build-xcframeworks.sh).
+        #
+        # BUILD_DIR is intentionally placed OUTSIDE the fork checkout
+        # (`workspace/../lynx-build`, not `workspace/lynx-build`).
+        # Otherwise it nests *inside* the fork tree as
+        # `/Users/runner/work/lynx/lynx/lynx-build/`, where it sits as
+        # a sibling of the fork's existing `build/` directory. With
+        # `:path` pointing at the fork tree, CocoaPods 1.16's
+        # `private_header_files` enumeration walks `build/build_config.h`
+        # successfully *locally* but mysteriously drops it on CI's
+        # nested layout — the CpHeader phase for `build_config.h`
+        # never gets generated and `LynxBase`'s `unique_fd.cc` then
+        # fails to find `#include "build/build_config.h"`. Sibling
+        # layout sidesteps the issue.
         run: .whisker/ios/build-xcframeworks.sh
         env:
-          BUILD_DIR: ${{ github.workspace }}/lynx-build
-          OUT_DIR: ${{ github.workspace }}/lynx-ios
+          BUILD_DIR: ${{ runner.temp }}/lynx-build
+          OUT_DIR: ${{ runner.temp }}/lynx-ios
 
       - name: Stage + pack tarball
         run: .whisker/ios/stage-tarball.sh
         env:
-          LYNX_BUILD_OUT: ${{ github.workspace }}/lynx-ios
+          LYNX_BUILD_OUT: ${{ runner.temp }}/lynx-ios
           VERSION: ${{ steps.ver.outputs.version }}
 
       - name: Upload artifact (workflow_dispatch)
