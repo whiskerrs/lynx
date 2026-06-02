@@ -393,6 +393,38 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_ui_invoke_method_async_with_params
     lynx_ui_method_result_cb callback,
     void* user_data);
 
+// ----- Element-level animation dispatch -------------------------------------
+//
+// Exposes `Element::Animate` (DOM layer, distinct from `lynx_ui_invoke_method`
+// which targets the UI layer below). Mirrors the JS `element.animate(...)`
+// shape from `runtime/js/bindings/java_script_element.cc`:
+//
+//     [operation, animation_name, keyframes_map, options_map]
+//
+// `operation` follows `JavaScriptElement::AnimationOperation`:
+//   0 = START, 1 = PLAY, 2 = PAUSE, 3 = CANCEL, 4 = FINISH
+//
+// For PLAY / PAUSE / CANCEL / FINISH only `animation_name` is required; pass
+// NULL for `keyframes` and `options`.
+//
+// For START all four are required:
+//   - `animation_name` — string identifier (used as the keyframes-map key)
+//   - `keyframes` — MAP with `"0%" / "50%" / "100%"` keys → MAP of CSS props
+//   - `options` — MAP of `name`, `duration`, `easing`, `iterations`,
+//                 `direction`, `fill`, `delay`, `play-state`
+//
+// Returns 0 on dispatch success; non-zero on precondition failure (NULL
+// shell / element / element not flushed). Method-side errors (bad keyframes,
+// invalid CSS values) are logged by Lynx and do not surface here — v1
+// contract.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_element_animate(
+    lynx_shell_t* shell,
+    lynx_fiber_element_t* element,
+    int32_t operation,
+    const char* animation_name,
+    const lynx_ui_method_value_t* keyframes,
+    const lynx_ui_method_value_t* options);
+
 // ----- subsecond ASLR anchor ------------------------------------------------
 
 // No-op function whose address serves as a well-known anchor for
