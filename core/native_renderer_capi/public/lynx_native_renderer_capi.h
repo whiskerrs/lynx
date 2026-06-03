@@ -146,6 +146,25 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute(
     const char* key,
     const char* value);
 
+// Set a number- or bool-valued attribute. The Lynx prop dispatch on
+// many UIs (e.g. `<list>`) gates branches on `value.IsNumber()` /
+// `value.IsBool()` against the lepus value, so the string-typed
+// `lynx_element_set_attribute` silently no-ops for those props. These
+// variants wrap the value in a typed `lepus::Value` so the dispatch
+// takes the right branch. `key` must be non-null.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_int(
+    lynx_fiber_element_t* element,
+    const char* key,
+    int64_t value);
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_bool(
+    lynx_fiber_element_t* element,
+    const char* key,
+    bool value);
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_double(
+    lynx_fiber_element_t* element,
+    const char* key,
+    double value);
+
 // Set raw inline CSS (as if `style="..."` were declared in template).
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_inline_styles(
     lynx_fiber_element_t* element,
