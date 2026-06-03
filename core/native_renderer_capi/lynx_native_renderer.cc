@@ -237,6 +237,33 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute(
       lynx::lepus::Value(lynx::base::String(value)));
 }
 
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_int(
+    lynx_fiber_element_t* element,
+    const char* key,
+    int64_t value) {
+  if (element == nullptr || !element->ref || key == nullptr) return;
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(value));
+}
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_bool(
+    lynx_fiber_element_t* element,
+    const char* key,
+    bool value) {
+  if (element == nullptr || !element->ref || key == nullptr) return;
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(value));
+}
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_double(
+    lynx_fiber_element_t* element,
+    const char* key,
+    double value) {
+  if (element == nullptr || !element->ref || key == nullptr) return;
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(value));
+}
+
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_event_handler(
     lynx_fiber_element_t* element,
     const char* event_name) {
