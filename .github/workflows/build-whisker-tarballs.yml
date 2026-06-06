@@ -432,10 +432,17 @@ jobs:
         # produced by build-xcframeworks.sh and computes the SwiftPM
         # checksum (`swift package compute-checksum`, NOT raw shasum)
         # that consumers paste into `binaryTarget(url:, checksum:)`.
+        #
+        # XCF_DIR mirrors the build step's OUT_DIR (runner.temp, not
+        # workspace) — keeping the xcframeworks outside the fork
+        # tree dodges a CocoaPods 1.16 private-header-enumeration
+        # quirk; that path choice is upstream's (see the comment in
+        # "Build Lynx + PrimJS xcframeworks"), we just have to match
+        # it here so the zip step finds the artefacts.
         run: .whisker/ios/stage-swiftpm.sh
         env:
           VERSION: ${{ steps.ver.outputs.version }}
-          XCF_DIR: ${{ github.workspace }}/lynx-ios
+          XCF_DIR: ${{ runner.temp }}/lynx-ios
           OUT_DIR: ${{ github.workspace }}/swiftpm-out
 
       - name: Upload xcframework zips (workflow_dispatch)
