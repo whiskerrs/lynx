@@ -217,7 +217,13 @@ jobs:
         # Whisker consumer `build.gradle.kts` reads via:
         #
         #     implementation("rs.whisker:lynx-android:<version>")
-        run: .whisker/android/stage-maven.sh
+        #
+        # The script lives inside the lynx tree (which actions/checkout
+        # placed at `lynx/` via `path: lynx` on the checkout step), so
+        # invoke it with the prefix from workspace root. LYNX_ROOT is
+        # `lynx` so the script's internal `cd "$LYNX_ROOT"` still
+        # resolves the AAR paths off the workspace root.
+        run: lynx/.whisker/android/stage-maven.sh
         env:
           VERSION: ${{ steps.ver.outputs.version }}
           REPO_DIR: ${{ github.workspace }}/maven-out
