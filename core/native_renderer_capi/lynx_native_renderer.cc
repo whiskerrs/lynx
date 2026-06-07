@@ -237,6 +237,33 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute(
       lynx::lepus::Value(lynx::base::String(value)));
 }
 
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_int(
+    lynx_fiber_element_t* element,
+    const char* key,
+    int64_t value) {
+  if (element == nullptr || !element->ref || key == nullptr) return;
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(value));
+}
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_bool(
+    lynx_fiber_element_t* element,
+    const char* key,
+    bool value) {
+  if (element == nullptr || !element->ref || key == nullptr) return;
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(value));
+}
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_double(
+    lynx_fiber_element_t* element,
+    const char* key,
+    double value) {
+  if (element == nullptr || !element->ref || key == nullptr) return;
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(value));
+}
+
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_event_handler(
     lynx_fiber_element_t* element,
     const char* event_name) {
@@ -775,6 +802,52 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_ui_invoke_method_async_with_params
   return 0;
 }
 
+
+// ----- Element-level animation dispatch -------------------------------------
+//
+// Mirrors the JS-side `element.animate()` flow:
+//   JavaScriptElement::animate → TemplateAssembler::ElementAnimate
+//   → Element::Animate(args, pipeline_option)
+//
+// We skip the JS / TemplateAssembler hop (Whisker doesn't use either)
+// and call `Element::Animate` directly on the fiber element, packing the
+// args array in the order the underlying method expects.
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_element_animate(
+    lynx_shell_t* shell,
+    lynx_fiber_element_t* element,
+    int32_t operation,
+    const char* animation_name,
+    const lynx_ui_method_value_t* keyframes,
+    const lynx_ui_method_value_t* options) {
+  if (shell == nullptr || shell->manager == nullptr || element == nullptr ||
+      element->ref == nullptr) {
+    return -1;
+  }
+  // PipelineOptions is required by Element::Animate but its body uses
+  // it only to feed `OnFinishUpdateProps`. A fresh, empty options bag
+  // is fine for our standalone dispatch.
+  auto pipeline_option = std::make_shared<lynx::tasm::PipelineOptions>();
+
+  auto args = lynx::lepus::CArray::Create();
+  args->emplace_back(lynx::lepus::Value(operation));
+  args->emplace_back(lynx::lepus::Value(
+      lynx::base::String(animation_name != nullptr ? animation_name : "")));
+
+  // START needs the full quartet. Other operations (PLAY / PAUSE /
+  // CANCEL / FINISH) only consult `args[1]` to identify which
+  // running animation to act on.
+  constexpr int32_t kStart = 0;
+  if (operation == kStart) {
+    args->emplace_back(keyframes != nullptr ? WhiskerCapiValueToLepus(*keyframes)
+                                            : lynx::lepus::Value());
+    args->emplace_back(options != nullptr ? WhiskerCapiValueToLepus(*options)
+                                          : lynx::lepus::Value());
+  }
+
+  element->ref->Animate(lynx::lepus::Value(std::move(args)), pipeline_option);
+  return 0;
+}
 
 // ----- subsecond ASLR anchor ------------------------------------------------
 
