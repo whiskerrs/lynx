@@ -50,6 +50,22 @@
 extern "C" {
 #endif
 
+// ----- ABI versioning -------------------------------------------------------
+
+// Returns the C ABI version this Lynx build exposes. Embedders that
+// resolve the surface dynamically (dlopen + dlsym, e.g. Whisker) call
+// this immediately after loading and refuse to proceed on a version
+// they weren't compiled against.
+//
+// The version is bumped whenever the C ABI changes incompatibly — a
+// signature change, a function removal, a struct layout change, or
+// a behavioural contract change. Pure additions (new functions
+// appended at the end of the header) don't require a bump; embedders
+// detect missing additions by their own dlsym returning NULL.
+//
+// Current version: 1
+LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_capi_abi_version(void);
+
 // ----- Opaque handle types --------------------------------------------------
 
 typedef struct lynx_shell_t lynx_shell_t;

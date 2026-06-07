@@ -64,6 +64,24 @@ struct lynx_fiber_element_t {
   fml::RefPtr<lynx::tasm::FiberElement> ref;
 };
 
+// ----- ABI versioning -------------------------------------------------------
+
+// Bump this when the C ABI changes incompatibly (signature change,
+// function removal, struct layout change, behavioural contract
+// change). Pure additions (appending new functions at the header's
+// tail) do NOT require a bump — embedders detect those via their own
+// dlsym returning NULL on the new symbol.
+//
+// Version log:
+//   1 — initial. Surface matches v3.8.0-whisker.6.
+namespace {
+constexpr int32_t kLynxCapiAbiVersion = 1;
+}  // namespace
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_capi_abi_version(void) {
+  return kLynxCapiAbiVersion;
+}
+
 // ----- Shell wrapping + lifecycle -------------------------------------------
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT lynx_shell_t* lynx_shell_from_native_ptr(
