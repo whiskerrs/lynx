@@ -26,7 +26,14 @@ static NSString *convertCStringToNSString(const char *value) {
 
 static NSData *convertLepusByteArrayToNSData(const lepus_value &value);
 
-static NSNumber *convertLepusBoolToNSNumber(bool value) { return value ? @(1) : @(0); }
+// Box as a boolean NSNumber (objCType "c"), NOT an integer. `@(1)`/`@(0)`
+// produce objCType "q" (long long), which makes a boolean indistinguishable
+// from an int once it reaches ObjC/Swift — Swift's `as? Bool` then fails and
+// whisker's `WhiskerValue.asBool` returns nil. `numberWithBool:` preserves the
+// boolean type so the value round-trips as a real Bool.
+static NSNumber *convertLepusBoolToNSNumber(bool value) {
+  return [NSNumber numberWithBool:value];
+}
 
 static NSNumber *convertLepusInt64ToNSNumber(int64_t value) { return @(value); }
 static NSNumber *convertLepusInt32ToNSNumber(int32_t value) { return @(value); }
