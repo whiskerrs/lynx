@@ -26,7 +26,13 @@ static NSString *convertCStringToNSString(const char *value) {
 
 static NSData *convertLepusByteArrayToNSData(const lepus_value &value);
 
-static NSNumber *convertLepusBoolToNSNumber(bool value) { return value ? @(1) : @(0); }
+static NSNumber *convertLepusBoolToNSNumber(bool value) {
+  // Box with +numberWithBool: so the NSNumber's objCType is "c" (BOOL),
+  // not "q" (long long). `@(1)`/`@(0)` are integer literals, so a lepus
+  // boolean would reach an embedder as an int and decode as `asBool ==
+  // nil`. (whiskerrs/whisker #4: ui_invoke_method BOOL arg round-trip.)
+  return [NSNumber numberWithBool:value];
+}
 
 static NSNumber *convertLepusInt64ToNSNumber(int64_t value) { return @(value); }
 static NSNumber *convertLepusInt32ToNSNumber(int32_t value) { return @(value); }
