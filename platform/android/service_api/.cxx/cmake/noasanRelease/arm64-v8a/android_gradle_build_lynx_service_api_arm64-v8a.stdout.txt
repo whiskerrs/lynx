@@ -1,0 +1,2 @@
+ninja: Entering directory `/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a'
+ninja: no work to do.

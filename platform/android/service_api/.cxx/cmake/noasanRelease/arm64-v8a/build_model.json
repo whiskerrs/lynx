@@ -1,0 +1,242 @@
+{
+  "abi": "ARM64_V8A",
+  "abiPlatformVersion": 16,
+  "buildSettings": {
+    "environmentVariables": []
+  },
+  "cmake": {
+    "cmakeArtifactsBaseFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a",
+    "cmakeServerLogFile": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a/cmake_server_log.txt",
+    "cmakeWrappingBaseFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cxx/noasanRelease/arm64-v8a",
+    "effectiveConfiguration": {
+      "name": "traditional-android-studio-cmake-environment",
+      "description": "Composite reified CMakeSettings configuration",
+      "generator": "Ninja",
+      "inheritEnvironments": [
+        "ndk"
+      ],
+      "buildRoot": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a",
+      "cmakeToolchain": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake",
+      "cmakeExecutable": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/cmake",
+      "variables": [
+        {
+          "name": "CMAKE_CXX_FLAGS",
+          "value": "-Wl,-ldl -Wno-unused-command-line-argument"
+        },
+        {
+          "name": "CMAKE_FIND_ROOT_PATH",
+          "value": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/prefab/arm64-v8a/prefab"
+        },
+        {
+          "name": "CMAKE_TOOLCHAIN_FILE",
+          "value": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake"
+        },
+        {
+          "name": "ANDROID_ABI",
+          "value": "arm64-v8a"
+        },
+        {
+          "name": "ANDROID_NDK",
+          "value": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462"
+        },
+        {
+          "name": "CMAKE_ANDROID_ARCH_ABI",
+          "value": "arm64-v8a"
+        },
+        {
+          "name": "CMAKE_ANDROID_NDK",
+          "value": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462"
+        },
+        {
+          "name": "CMAKE_EXPORT_COMPILE_COMMANDS",
+          "value": "ON"
+        },
+        {
+          "name": "CMAKE_LIBRARY_OUTPUT_DIRECTORY",
+          "value": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj/arm64-v8a"
+        },
+        {
+          "name": "CMAKE_MAKE_PROGRAM",
+          "value": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja"
+        },
+        {
+          "name": "CMAKE_SYSTEM_NAME",
+          "value": "Android"
+        },
+        {
+          "name": "CMAKE_SYSTEM_VERSION",
+          "value": "16"
+        },
+        {
+          "name": "FLAVOR_NAME",
+          "value": "noasan"
+        },
+        {
+          "name": "ANDROID_PLATFORM",
+          "value": "android-14"
+        },
+        {
+          "name": "BUILD_LEPUS_COMPILE",
+          "value": "false"
+        },
+        {
+          "name": "ANDROID_TOOLCHAIN",
+          "value": "clang"
+        },
+        {
+          "name": "ANDROID_STL",
+          "value": "c++_static"
+        },
+        {
+          "name": "CMAKE_BUILD_TYPE",
+          "value": "Release"
+        },
+        {
+          "name": "LOCAL_ARM_NEON",
+          "value": "true"
+        },
+        {
+          "name": "BUILD_TYPE",
+          "value": "release"
+        }
+      ]
+    }
+  },
+  "cxxBuildFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a",
+  "info": {
+    "abi": "ARM64_V8A",
+    "bitness": 64,
+    "deprecated": false,
+    "default": true
+  },
+  "originalCxxBuildFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a",
+  "variant": {
+    "buildSystemArgumentList": [
+      "-DFLAVOR_NAME\u003dnoasan",
+      "-DANDROID_PLATFORM\u003dandroid-14",
+      "-DBUILD_LEPUS_COMPILE\u003dfalse",
+      "-DANDROID_TOOLCHAIN\u003dclang",
+      "-DANDROID_STL\u003dc++_static",
+      "-DCMAKE_BUILD_TYPE\u003dRelease",
+      "-DLOCAL_ARM_NEON\u003dtrue",
+      "-DBUILD_TYPE\u003drelease",
+      "-LH"
+    ],
+    "buildTargetSet": [],
+    "implicitBuildTargetSet": [],
+    "cFlagsList": [],
+    "cmakeSettingsConfiguration": "android-gradle-plugin-predetermined-name",
+    "cppFlagsList": [
+      "-Wl,-ldl",
+      "-Wno-unused-command-line-argument"
+    ],
+    "isDebuggableEnabled": false,
+    "module": {
+      "buildSystem": "CMAKE",
+      "cmake": {
+        "cmakeExe": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/cmake",
+        "minimumCmakeVersion": "3.18.1",
+        "ninjaExe": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja"
+      },
+      "cmakeToolchainFile": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake",
+      "cxxFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx",
+      "gradleModulePathName": ":ServiceAPI",
+      "intermediatesFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates",
+      "makeFile": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+      "moduleBuildFile": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build.gradle",
+      "moduleRootFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api",
+      "ndkDefaultAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "ndkFolder": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462",
+      "ndkMetaAbiList": [
+        {
+          "abi": "ARMEABI_V7A",
+          "bitness": 32,
+          "deprecated": false,
+          "default": true
+        },
+        {
+          "abi": "ARM64_V8A",
+          "bitness": 64,
+          "deprecated": false,
+          "default": true
+        },
+        {
+          "abi": "X86",
+          "bitness": 32,
+          "deprecated": false,
+          "default": true
+        },
+        {
+          "abi": "X86_64",
+          "bitness": 64,
+          "deprecated": false,
+          "default": true
+        }
+      ],
+      "ndkMetaPlatforms": {
+        "min": 16,
+        "max": 29,
+        "aliases": {
+          "20": 19,
+          "25": 24,
+          "J": 16,
+          "J-MR1": 17,
+          "J-MR2": 18,
+          "K": 19,
+          "L": 21,
+          "L-MR1": 22,
+          "M": 23,
+          "N": 24,
+          "N-MR1": 24,
+          "O": 26,
+          "O-MR1": 27,
+          "P": 28,
+          "Q": 29
+        }
+      },
+      "ndkSupportedAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "ndkDefaultStl": "LIBCXX_STATIC",
+      "ndkVersion": "21.1.6352462",
+      "project": {
+        "compilerSettingsCacheFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/.cxx",
+        "cxxFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/.cxx",
+        "isBuildOnlyTargetAbiEnabled": true,
+        "isCmakeBuildCohabitationEnabled": false,
+        "isNativeCompilerSettingsCacheEnabled": false,
+        "rootBuildGradleFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android",
+        "sdkFolder": "/Users/itome/Library/Android/sdk",
+        "isPrefabEnabled": false
+      },
+      "splitsAbiFilterSet": [],
+      "stlSharedObjectMap": {
+        "LIBCXX_SHARED": {
+          "ARMEABI_V7A": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so",
+          "ARM64_V8A": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so",
+          "X86": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/i686-linux-android/libc++_shared.so",
+          "X86_64": "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/x86_64-linux-android/libc++_shared.so"
+        },
+        "LIBCXX_STATIC": {},
+        "NONE": {},
+        "SYSTEM": {}
+      }
+    },
+    "objFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj",
+    "variantName": "noasanRelease",
+    "validAbiList": [
+      "ARM64_V8A"
+    ],
+    "prefabDirectory": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/prefab",
+    "prefabPackageDirectoryList": []
+  },
+  "prefabFolder": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/prefab/arm64-v8a"
+}
