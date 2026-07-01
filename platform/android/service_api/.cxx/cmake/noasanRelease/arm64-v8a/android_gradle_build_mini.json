@@ -1,0 +1,27 @@
+{
+  "buildFiles": [
+    "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake",
+    "/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/platforms.cmake",
+    "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists_impl/noasanreleasearm64-v8a/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja -C \"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\" clean"
+  ],
+  "buildTargetsCommand": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja  -C \"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\" {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "lynx_service_api-Release-arm64-v8a": {
+      "artifactName": "lynx_service_api",
+      "buildCommand": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja -C \"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\" lynx_service_api",
+      "abi": "arm64-v8a",
+      "output": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj/arm64-v8a/liblynx_service_api.so",
+      "runtimeFiles": []
+    },
+    "s_src-Release-arm64-v8a": {
+      "artifactName": "s_src",
+      "buildCommand": "/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja -C \"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\" s_src",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    }
+  }
+}

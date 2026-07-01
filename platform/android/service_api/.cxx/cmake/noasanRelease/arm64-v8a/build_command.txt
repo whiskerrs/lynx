@@ -1,0 +1,28 @@
+                Executable : /Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/cmake
+arguments : 
+-H/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api
+-DCMAKE_CXX_FLAGS=-Wl,-ldl -Wno-unused-command-line-argument
+-DCMAKE_FIND_ROOT_PATH=/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/prefab/arm64-v8a/prefab
+-DCMAKE_TOOLCHAIN_FILE=/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake
+-DANDROID_ABI=arm64-v8a
+-DANDROID_NDK=/Users/itome/Library/Android/sdk/ndk/21.1.6352462
+-DCMAKE_ANDROID_ARCH_ABI=arm64-v8a
+-DCMAKE_ANDROID_NDK=/Users/itome/Library/Android/sdk/ndk/21.1.6352462
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj/arm64-v8a
+-DCMAKE_MAKE_PROGRAM=/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_SYSTEM_VERSION=16
+-DFLAVOR_NAME=noasan
+-DANDROID_PLATFORM=android-14
+-DBUILD_LEPUS_COMPILE=false
+-DANDROID_TOOLCHAIN=clang
+-DANDROID_STL=c++_static
+-DCMAKE_BUILD_TYPE=Release
+-DLOCAL_ARM_NEON=true
+-DBUILD_TYPE=release
+-B/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a
+-GNinja
+jvmArgs : 
+
+Build command args:

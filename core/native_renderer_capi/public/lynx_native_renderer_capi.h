@@ -180,6 +180,16 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_double(
     lynx_fiber_element_t* element,
     const char* key,
     double value);
+// Set `key` to an object attribute `{ obj_keys[i]: obj_values[i] }` of
+// doubles — for props that read an object value (e.g. `<list>`'s
+// `item-snap` → `{factor, offset}`). The scalar setters above cannot
+// express a Map value.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_object(
+    lynx_fiber_element_t* element,
+    const char* key,
+    const char* const* obj_keys,
+    const double* obj_values,
+    int32_t obj_count);
 
 // Set raw inline CSS (as if `style="..."` were declared in template).
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_inline_styles(
@@ -271,8 +281,25 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
 // without lepus header access can't synthesise it via the string
 // `lynx_element_set_attribute` capi — this capi exists so they can
 // trigger the broadcast with just an `int`.
+// Drive a `<list>`'s decoupled data source. `item_keys[0..count)` are the
+// REAL (stable) item-keys in current order; the parallel arrays carry
+// per-item layout metadata (`estimated_main_axis_px` uses -1 for "unset";
+// the `uint8_t*` flag arrays use 0/1, with `recyclable` defaulting to 1).
+// Any metadata array may be null to omit it entirely. `prev_count` is the
+// item count from the previous call (0 on first) — the update is a full
+// replace (removeAction over the old positions + insertAction of the new
+// items), so the native adapter recomputes moves/inserts/removes from the
+// keys. Builds a Map-valued `update-list-info` attribute, which the
+// string-only `lynx_element_set_attribute` capi cannot express.
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
     lynx_fiber_element_t* element,
+    int32_t prev_count,
+    const char* const* item_keys,
+    const int32_t* estimated_main_axis_px,
+    const uint8_t* full_span,
+    const uint8_t* sticky_top,
+    const uint8_t* sticky_bottom,
+    const uint8_t* recyclable,
     int32_t count);
 
 // ----- Pipeline -------------------------------------------------------------
