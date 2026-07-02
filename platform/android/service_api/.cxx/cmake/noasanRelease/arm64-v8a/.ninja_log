@@ -1,0 +1,3 @@
+# ninja log v5
+0	527	1779969300	CMakeFiles/s_src.dir/Users/itome/Projects/github.com/whiskerrs/lynx/service_api/service_api.cc.o	55dc240bf13269d5
+527	1166	1779969301	../../../../build/intermediates/cmake/noasanRelease/obj/arm64-v8a/liblynx_service_api.so	4c4da2ad040c46e8

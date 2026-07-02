@@ -1,0 +1,7 @@
+Executable : /Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja
+arguments : 
+-C
+/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a
+lynx_service_api
+jvmArgs : 
+

@@ -180,6 +180,16 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_double(
     lynx_fiber_element_t* element,
     const char* key,
     double value);
+// Set `key` to an object attribute `{ obj_keys[i]: obj_values[i] }` of
+// doubles — for props that read an object value (e.g. `<list>`'s
+// `item-snap` → `{factor, offset}`). The scalar setters above cannot
+// express a Map value.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_object(
+    lynx_fiber_element_t* element,
+    const char* key,
+    const char* const* obj_keys,
+    const double* obj_values,
+    int32_t obj_count);
 
 // Set raw inline CSS (as if `style="..."` were declared in template).
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_inline_styles(
@@ -271,8 +281,25 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
 // without lepus header access can't synthesise it via the string
 // `lynx_element_set_attribute` capi — this capi exists so they can
 // trigger the broadcast with just an `int`.
+// Drive a `<list>`'s decoupled data source. `item_keys[0..count)` are the
+// REAL (stable) item-keys in current order; the parallel arrays carry
+// per-item layout metadata (`estimated_main_axis_px` uses -1 for "unset";
+// the `uint8_t*` flag arrays use 0/1, with `recyclable` defaulting to 1).
+// Any metadata array may be null to omit it entirely. `prev_count` is the
+// item count from the previous call (0 on first) — the update is a full
+// replace (removeAction over the old positions + insertAction of the new
+// items), so the native adapter recomputes moves/inserts/removes from the
+// keys. Builds a Map-valued `update-list-info` attribute, which the
+// string-only `lynx_element_set_attribute` capi cannot express.
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
     lynx_fiber_element_t* element,
+    int32_t prev_count,
+    const char* const* item_keys,
+    const int32_t* estimated_main_axis_px,
+    const uint8_t* full_span,
+    const uint8_t* sticky_top,
+    const uint8_t* sticky_bottom,
+    const uint8_t* recyclable,
     int32_t count);
 
 // ----- Pipeline -------------------------------------------------------------
@@ -459,6 +486,48 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_element_animate(
     const char* animation_name,
     const lynx_ui_method_value_t* keyframes,
     const lynx_ui_method_value_t* options);
+
+// ----- Core-originated custom events -----------------------------------------
+//
+// Some component events are generated inside the engine core rather
+// than by the platform UI layer — today that is the `<list>` family
+// (`scroll` / `scrolltoupper` / `scrolltolower` / `snap` /
+// `layoutcomplete` / impression events) plus `<frame>` events. Those
+// events are dispatched to the JS event system only, so an embedder
+// without a JS runtime never sees them (the platform event-reporter
+// hook is NOT on their path).
+//
+// Registering this callback routes every core-originated custom event
+// to the embedder instead. Contract:
+//   - `element_id` is the target's `impl_id` — the same id space
+//     `lynx_element_get_id` returns.
+//   - `params` is the event payload (what JS would receive as
+//     `detail`), encoded as a `lynx_ui_method_value_t` tree. It is
+//     only valid for the duration of the call — deep-copy to retain.
+//     May be NULL when the event carries no payload.
+//   - The callback is invoked synchronously on the engine (TASM)
+//     thread from within the send path. Do not re-enter the engine;
+//     hand off to your own thread/queue for real work.
+//   - Return true to consume the event (it will NOT be forwarded to
+//     the JS event system); false to observe-and-forward.
+//
+// Platform-originated events (touch/gesture, platform-emitted
+// component events such as `<scroll-view>` scroll) are unaffected —
+// they keep flowing through the platform event-reporter hook.
+//
+// Pass a NULL `callback` to unregister. Must be called on the TASM
+// thread (e.g. via `lynx_shell_run_on_tasm_thread`) after fiber-arch
+// init, like the other element APIs.
+typedef bool (*lynx_custom_event_callback_t)(
+    void* user_data,
+    int32_t element_id,
+    const char* event_name,
+    const lynx_ui_method_value_t* params);
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_shell_set_custom_event_callback(
+    lynx_shell_t* shell,
+    lynx_custom_event_callback_t callback,
+    void* user_data);
 
 // ----- subsecond ASLR anchor ------------------------------------------------
 

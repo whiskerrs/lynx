@@ -1,0 +1,224 @@
+[
+  {
+    "level": "INFO",
+    "message": "Start JSON generation. Platform version: 16 min SDK version: arm64-v8a",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "- CMake found from cmake.dir at \u0027/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake\u0027 had version \u00273.18.1\u0027",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "rebuilding JSON /Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a/android_gradle_build.json due to:",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "- a dependent build file changed",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "  - /Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists_impl/noasanreleasearm64-v8a/CMakeLists.txt",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "keeping json folder \u0027/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\u0027 but regenerating project",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "executing cmake Executable : /Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/cmake\narguments : \n-H/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api\n-DCMAKE_CXX_FLAGS\u003d-Wl,-ldl -Wno-unused-command-line-argument\n-DCMAKE_FIND_ROOT_PATH\u003d/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/prefab/arm64-v8a/prefab\n-DCMAKE_TOOLCHAIN_FILE\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake\n-DANDROID_ABI\u003darm64-v8a\n-DANDROID_NDK\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462\n-DCMAKE_ANDROID_ARCH_ABI\u003darm64-v8a\n-DCMAKE_ANDROID_NDK\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462\n-DCMAKE_EXPORT_COMPILE_COMMANDS\u003dON\n-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\u003d/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj/arm64-v8a\n-DCMAKE_MAKE_PROGRAM\u003d/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja\n-DCMAKE_SYSTEM_NAME\u003dAndroid\n-DCMAKE_SYSTEM_VERSION\u003d16\n-DFLAVOR_NAME\u003dnoasan\n-DANDROID_PLATFORM\u003dandroid-14\n-DBUILD_LEPUS_COMPILE\u003dfalse\n-DANDROID_TOOLCHAIN\u003dclang\n-DANDROID_STL\u003dc++_static\n-DCMAKE_BUILD_TYPE\u003dRelease\n-DLOCAL_ARM_NEON\u003dtrue\n-DBUILD_TYPE\u003drelease\n-B/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\n-GNinja\njvmArgs : \n\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "[\u003d\u003d \"CMake Server\" \u003d\u003d[\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"supportedProtocolVersions\":[{\"isExperimental\":true,\"major\":1,\"minor\":2}],\"type\":\"hello\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "]\u003d\u003d \"CMake Server\" \u003d\u003d]\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\n  \"type\": \"handshake\",\n  \"cookie\": \"gradle-cmake-cookie\",\n  \"protocolVersion\": {\n    \"isExperimental\": true,\n    \"major\": 1,\n    \"minor\": 2\n  },\n  \"sourceDirectory\": \"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api\",\n  \"buildDirectory\": \"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\",\n  \"generator\": \"Ninja\"\n}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"gradle-cmake-cookie\",\"inReplyTo\":\"handshake\",\"type\":\"reply\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\n  \"type\": \"configure\",\n  \"cacheArguments\": [\n    \"\",\n    \"-DCMAKE_CXX_FLAGS\\u003d-Wl,-ldl -Wno-unused-command-line-argument\",\n    \"-DCMAKE_FIND_ROOT_PATH\\u003d/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/prefab/arm64-v8a/prefab\",\n    \"-DCMAKE_TOOLCHAIN_FILE\\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake\",\n    \"-DANDROID_ABI\\u003darm64-v8a\",\n    \"-DANDROID_NDK\\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462\",\n    \"-DCMAKE_ANDROID_ARCH_ABI\\u003darm64-v8a\",\n    \"-DCMAKE_ANDROID_NDK\\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462\",\n    \"-DCMAKE_EXPORT_COMPILE_COMMANDS\\u003dON\",\n    \"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY\\u003d/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj/arm64-v8a\",\n    \"-DCMAKE_MAKE_PROGRAM\\u003d/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/bin/ninja\",\n    \"-DCMAKE_SYSTEM_NAME\\u003dAndroid\",\n    \"-DCMAKE_SYSTEM_VERSION\\u003d16\",\n    \"-DFLAVOR_NAME\\u003dnoasan\",\n    \"-DANDROID_PLATFORM\\u003dandroid-14\",\n    \"-DBUILD_LEPUS_COMPILE\\u003dfalse\",\n    \"-DANDROID_TOOLCHAIN\\u003dclang\",\n    \"-DANDROID_STL\\u003dc++_static\",\n    \"-DCMAKE_BUILD_TYPE\\u003dRelease\",\n    \"-DLOCAL_ARM_NEON\\u003dtrue\",\n    \"-DBUILD_TYPE\\u003drelease\"\n  ]\n}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"configure\",\"message\":\"CMake Warning (dev) in CMakeLists.txt:\\n  No project() command is present.  The top-level CMakeLists.txt file must\\n  contain a literal, direct call to the project() command.  Add a line of\\n  code such as\\n\\n    project(ProjectName)\\n\\n  near the top of the file, but after cmake_minimum_required().\\n\\n  CMake is pretending there is a \\\"project(Project)\\\" command on the first\\n  line.\\nThis warning is for project developers.  Use -Wno-dev to suppress it.\\n\",\"title\":\"Warning\",\"type\":\"message\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "WARN",
+    "message": "CMake Warning (dev) in CMakeLists.txt:\n  No project() command is present.  The top-level CMakeLists.txt file must\n  contain a literal, direct call to the project() command.  Add a line of\n  code such as\n\n    project(ProjectName)\n\n  near the top of the file, but after cmake_minimum_required().\n\n  CMake is pretending there is a \"project(Project)\" command on the first\n  line.\nThis warning is for project developers.  Use -Wno-dev to suppress it.",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"configure\",\"message\":\"android-14 is unsupported. Using minimum supported version 16.\",\"type\":\"message\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "android-14 is unsupported. Using minimum supported version 16.",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"configure\",\"message\":\"Configuring done\",\"type\":\"message\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "Configuring done",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"configure\",\"message\":\"CMake Deprecation Warning:\\n  The \u0027cmake-server(7)\u0027 is deprecated.  Please port clients to use the\\n  \u0027cmake-file-api(7)\u0027 instead.\\n\\n\",\"title\":\"Warning\",\"type\":\"message\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "WARN",
+    "message": "CMake Deprecation Warning:\n  The \u0027cmake-server(7)\u0027 is deprecated.  Please port clients to use the\n  \u0027cmake-file-api(7)\u0027 instead.\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"configure\",\"type\":\"reply\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"type\":\"compute\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"compute\",\"progressCurrent\":100,\"progressMaximum\":1000,\"progressMessage\":\"Generating\",\"progressMinimum\":0,\"type\":\"progress\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"compute\",\"progressCurrent\":1000,\"progressMaximum\":1000,\"progressMessage\":\"Generating\",\"progressMinimum\":0,\"type\":\"progress\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"compute\",\"message\":\"Generating done\",\"type\":\"message\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "Generating done",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"cookie\":\"\",\"inReplyTo\":\"compute\",\"type\":\"reply\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"type\":\"cmakeInputs\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"buildFiles\":[{\"isCMake\":true,\"isTemporary\":false,\"sources\":[\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeSystemSpecificInitialize.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Initialize.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeSystemSpecificInformation.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeGenericSystem.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeInitializeConfigs.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Linux.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/UnixPaths.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeCInformation.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeLanguageInformation.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/Clang-C.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/Clang.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/CMakeCommonCompilerMacros.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/GNU.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/CMakeCommonCompilerMacros.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Internal/CMakeCheckCompilerFlag.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Clang-C.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Clang.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeCommonLanguageInclude.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeCXXInformation.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeLanguageInformation.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/Clang-CXX.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/Clang.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Clang-CXX.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Clang.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeCommonLanguageInclude.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/CMakeASMInformation.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/Clang-ASM.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Compiler/Clang.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Clang-ASM.cmake\",\"../../../buildtools/cmake/share/cmake-3.18/Modules/Platform/Android-Clang.cmake\"]},{\"isCMake\":false,\"isTemporary\":false,\"sources\":[\"CMakeLists.txt\",\"/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/android.toolchain.cmake\",\"/Users/itome/Library/Android/sdk/ndk/21.1.6352462/build/cmake/platforms.cmake\",\"CMakeLists_impl/noasanreleasearm64-v8a/CMakeLists.txt\"]},{\"isCMake\":false,\"isTemporary\":true,\"sources\":[\".cxx/cmake/noasanRelease/arm64-v8a/CMakeFiles/3.18.1-g262b901/CMakeSystem.cmake\",\".cxx/cmake/noasanRelease/arm64-v8a/CMakeFiles/3.18.1-g262b901/CMakeCCompiler.cmake\",\".cxx/cmake/noasanRelease/arm64-v8a/CMakeFiles/3.18.1-g262b901/CMakeCXXCompiler.cmake\",\".cxx/cmake/noasanRelease/arm64-v8a/CMakeFiles/3.18.1-g262b901/CMakeASMCompiler.cmake\"]}],\"cmakeRootDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/buildtools/cmake/share/cmake-3.18\",\"cookie\":\"\",\"inReplyTo\":\"cmakeInputs\",\"sourceDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api\",\"type\":\"reply\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"type\":\"codemodel\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "{\"configurations\":[{\"name\":\"Release\",\"projects\":[{\"buildDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\",\"hasInstallRule\":false,\"minimumCMakeVersion\":\"3.4.1\",\"name\":\"Project\",\"sourceDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api\",\"targets\":[{\"artifacts\":[\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/build/intermediates/cmake/noasanRelease/obj/arm64-v8a/liblynx_service_api.so\"],\"buildDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\",\"fileGroups\":[{\"isGenerated\":true,\"sources\":[\".cxx/cmake/noasanRelease/arm64-v8a/CMakeFiles/s_src.dir/Users/itome/Projects/github.com/whiskerrs/lynx/service_api/service_api.cc.o\"]}],\"fullName\":\"liblynx_service_api.so\",\"isGeneratorProvided\":false,\"linkFlags\":\"-Wl,--exclude-libs,libgcc.a -Wl,--exclude-libs,libgcc_real.a -Wl,--exclude-libs,libatomic.a -static-libstdc++ -Wl,--build-id -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments  -Wl,--fatal-warnings -fPIC -Wl,-z,noexecstack -Wl,-z,now -Wl,-z,relro -Wl,-z,defs -Wl,--undefined-version --gcc-toolchain\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64 -Wl,--no-undefined -Wl,--exclude-libs,ALL -fuse-ld\u003dlld -Wl,--icf\u003dall --target\u003daarch64-linux-android22 -Wl,--warn-shared-textrel --sysroot\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot  -Wl,--warn-shared-textrel -Wl,-O2 -Wl,--gc-sections -Wl,--as-needed -flto -O2 -Wl,-z,max-page-size\u003d16384 -fuse-ld\u003dlld\",\"linkLibraries\":\"-lc  -ldl  -llog  -lm  -latomic -lm\",\"linkPath\":\"-L/Users/itome/Library/Android/sdk/ndk/21.1.6352462/sources/cxx-stl/llvm-libc++/libs/arm64-v8a\",\"linkerLanguage\":\"CXX\",\"name\":\"lynx_service_api\",\"sourceDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api\",\"sysroot\":\"/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot\",\"type\":\"SHARED_LIBRARY\"},{\"artifacts\":[\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a/s_src\"],\"buildDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a\",\"fileGroups\":[{\"isGenerated\":false,\"sources\":[\"../../../service_api/service_api.h\",\"../../../service_api/service_api_services.h\",\"../../../service_api/service_api_utils.h\",\"../../../service_api/service_lazy_load.h\",\"../../../service_api/services/trail/trail_service.h\",\"../../../service_api/services/trail/trail_setting_key.h\"]},{\"compileFlags\":\"-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE\u003d2 -Wformat -Werror\u003dformat-security  -Wl,-ldl -Wno-unused-command-line-argument -O2 -DNDEBUG  -fPIC -fno-strict-aliasing -fPIC -pipe -fcolor-diagnostics -ffunction-sections -funwind-tables -fno-short-enums -faddrsig --target\u003daarch64-linux-android22 -Wall -Wextra -Wendif-labels -Werror -Wno-missing-field-initializers -Wno-unused-parameter -Wno-vla-extension -fvisibility\u003dhidden --sysroot\u003d/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -Wstring-conversion -Wnewline-eof -Oz -fno-ident -fdata-sections -ffunction-sections -fomit-frame-pointer -flto -g2 -fvisibility-inlines-hidden -std\u003dc++17 -fno-rtti -includeandroid/log.h \\\"-D_LIBCPP_VERBOSE_ABORT(...)\u003d__android_log_print(ANDROID_LOG_FATAL,libc++,__VA_ARGS__)\\\" -fno-exceptions\",\"defines\":[\"ANDROID\",\"DYNAMIC_ANNOTATIONS_ENABLED\u003d0\",\"HAVE_SYS_UIO_H\",\"NDEBUG\",\"NVALGRIND\",\"USE_OPENSSL\u003d1\",\"USE_OPENSSL_CERTS\u003d1\",\"_FORTIFY_SOURCE\u003d2\",\"_LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS\",\"_LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS\",\"__STDC_CONSTANT_MACROS\",\"__STDC_FORMAT_MACROS\",\"__compiler_offsetof\u003d__builtin_offsetof\",\"nan\u003d__builtin_nan\"],\"includePath\":[{\"path\":\"/Users/itome/Projects/github.com/whiskerrs/lynx\"},{\"path\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/lynx\"},{\"path\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/out/gn_to_cmake/noasanreleasearm64-v8a/gen\"}],\"isGenerated\":false,\"language\":\"CXX\",\"sources\":[\"../../../service_api/service_api.cc\"]}],\"fullName\":\"s_src\",\"isGeneratorProvided\":false,\"linkerLanguage\":\"CXX\",\"name\":\"s_src\",\"sourceDirectory\":\"/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api\",\"sysroot\":\"/Users/itome/Library/Android/sdk/ndk/21.1.6352462/toolchains/llvm/prebuilt/darwin-x86_64/sysroot\",\"type\":\"OBJECT_LIBRARY\"}]}]}],\"cookie\":\"\",\"inReplyTo\":\"codemodel\",\"type\":\"reply\"}\n",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "done executing cmake",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "write build output /Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a/build_output.txt",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "write command file /Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/.cxx/cmake/noasanRelease/arm64-v8a/build_command.txt",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  },
+  {
+    "level": "INFO",
+    "message": "JSON generation completed without problems",
+    "file": "/Users/itome/Projects/github.com/whiskerrs/lynx/platform/android/service_api/CMakeLists.txt",
+    "tag": "noasanRelease|arm64-v8a"
+  }
+]

@@ -75,7 +75,11 @@ struct lynx_fiber_element_t {
 // Version log:
 //   1 — initial. Surface matches v3.8.0-whisker.6.
 namespace {
-constexpr int32_t kLynxCapiAbiVersion = 1;
+// Bumped to 2: `lynx_element_set_update_list_info` gained the item-key +
+// per-item metadata arrays (real keys + full replace) so `<list>` can
+// diff reorders; added `lynx_element_set_attribute_object` for object-
+// valued attributes (e.g. `item-snap`).
+constexpr int32_t kLynxCapiAbiVersion = 2;
 }  // namespace
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_capi_abi_version(void) {
@@ -282,6 +286,31 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_double(
                              lynx::lepus::Value(value));
 }
 
+// Set `key` to an object attribute `{ obj_keys[i]: obj_values[i] }` of
+// doubles. Some Lynx props read an object value (e.g. `<list>`'s
+// `item-snap` reads `value["factor"]` / `value["offset"]`), which the
+// scalar `lynx_element_set_attribute*` capis cannot express.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_attribute_object(
+    lynx_fiber_element_t* element,
+    const char* key,
+    const char* const* obj_keys,
+    const double* obj_values,
+    int32_t obj_count) {
+  if (element == nullptr || !element->ref || key == nullptr ||
+      obj_count < 0) {
+    return;
+  }
+  auto dict = lynx::lepus::Dictionary::Create();
+  for (int32_t i = 0; i < obj_count; ++i) {
+    if (obj_keys == nullptr || obj_keys[i] == nullptr) continue;
+    dict->SetValue(lynx::base::String(obj_keys[i]),
+                   lynx::lepus::Value(obj_values != nullptr ? obj_values[i]
+                                                            : 0.0));
+  }
+  element->ref->SetAttribute(lynx::base::String(key),
+                             lynx::lepus::Value(std::move(dict)));
+}
+
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_event_handler(
     lynx_fiber_element_t* element,
     const char* event_name) {
@@ -382,37 +411,76 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
     lynx_fiber_element_t* element,
+    int32_t prev_count,
+    const char* const* item_keys,
+    const int32_t* estimated_main_axis_px,
+    const uint8_t* full_span,
+    const uint8_t* sticky_top,
+    const uint8_t* sticky_bottom,
+    const uint8_t* recyclable,
     int32_t count) {
-  if (element == nullptr || !element->ref || count < 0) {
+  if (element == nullptr || !element->ref || count < 0 || prev_count < 0) {
     return;
   }
-  // Build `{insertAction: [{position:i, item-key:"w_<i>"}, …]}` —
+  // Build `{removeAction:[…], insertAction:[{position, item-key, …}]}` —
   // the schema `ListAdapter::UpdateFiberDataSource` expects. The
-  // attribute setter on `decoupled_list_container_impl` requires a
-  // Map value (string attrs go through a different branch), which
-  // can't be expressed through the string-only
-  // `lynx_element_set_attribute` capi — hence this dedicated entry.
+  // decoupled list keeps a persistent `item_keys_` vector; the
+  // remove+insert pair transforms the previous order into the new one.
+  //
+  // Whisker drives the list on demand, so every data update is sent as a
+  // **full replace**: remove all `prev_count` prior positions, then
+  // insert all `count` current items with their REAL (stable) item-keys
+  // and per-item layout metadata. The native adapter reconciles surviving
+  // items by item-key (recycling their elements), and — crucially —
+  // computes moves from the reordered keys, which the old positional
+  // (`w_<i>`) + insert-only schema could not express.
+  //
+  // The attribute setter on `decoupled_list_container_impl` requires a
+  // Map value (string attrs go through a different branch), which can't
+  // be expressed through the string-only `lynx_element_set_attribute`
+  // capi — hence this dedicated entry.
+  auto remove_array = lynx::lepus::CArray::Create();
+  for (int32_t i = 0; i < prev_count; ++i) {
+    remove_array->emplace_back(lynx::lepus::Value(i));
+  }
   auto insert_array = lynx::lepus::CArray::Create();
   for (int32_t i = 0; i < count; ++i) {
     auto entry = lynx::lepus::Dictionary::Create();
     entry->SetValue(lynx::base::String("position"), lynx::lepus::Value(i));
+    const char* key = (item_keys != nullptr) ? item_keys[i] : nullptr;
     entry->SetValue(
         lynx::base::String("item-key"),
-        lynx::lepus::Value(lynx::base::String("w_" + std::to_string(i))));
-    // Intentionally NOT setting `estimated-main-axis-size-px`.
-    // Lynx's documented default — "size of <list> in the main axis
-    // direction" — applies: the first item's item_holder budgets
-    // the full viewport, Fill exits after one iter, the item is
-    // bound + measured, and the next layout pass advances. Whisker
-    // will surface per-`list_item` overrides via a typed builder
-    // method.
+        lynx::lepus::Value(lynx::base::String(key != nullptr ? key : "")));
+    if (full_span != nullptr && full_span[i]) {
+      entry->SetValue(lynx::base::String("full-span"),
+                      lynx::lepus::Value(true));
+    }
+    if (sticky_top != nullptr && sticky_top[i]) {
+      entry->SetValue(lynx::base::String("sticky-top"),
+                      lynx::lepus::Value(true));
+    }
+    if (sticky_bottom != nullptr && sticky_bottom[i]) {
+      entry->SetValue(lynx::base::String("sticky-bottom"),
+                      lynx::lepus::Value(true));
+    }
+    if (estimated_main_axis_px != nullptr && estimated_main_axis_px[i] >= 0) {
+      entry->SetValue(lynx::base::String("estimated-main-axis-size-px"),
+                      lynx::lepus::Value(estimated_main_axis_px[i]));
+    }
+    // `recyclable` defaults to true; only emit the override when false.
+    if (recyclable != nullptr && recyclable[i] == 0) {
+      entry->SetValue(lynx::base::String("recyclable"),
+                      lynx::lepus::Value(false));
+    }
     insert_array->emplace_back(lynx::lepus::Value(std::move(entry)));
   }
   auto update_info = lynx::lepus::Dictionary::Create();
+  update_info->SetValue(lynx::base::String("removeAction"),
+                        lynx::lepus::Value(std::move(remove_array)));
   update_info->SetValue(lynx::base::String("insertAction"),
                         lynx::lepus::Value(std::move(insert_array)));
   element->ref->SetAttribute(lynx::base::String("update-list-info"),
-                              lynx::lepus::Value(std::move(update_info)));
+                             lynx::lepus::Value(std::move(update_info)));
 }
 
 // ----- Pipeline -------------------------------------------------------------
@@ -865,6 +933,34 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_element_animate(
 
   element->ref->Animate(lynx::lepus::Value(std::move(args)), pipeline_option);
   return 0;
+}
+
+// ----- Core-originated custom events -----------------------------------------
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_shell_set_custom_event_callback(
+    lynx_shell_t* shell,
+    lynx_custom_event_callback_t callback,
+    void* user_data) {
+  if (shell == nullptr || shell->manager == nullptr) {
+    return;
+  }
+  if (callback == nullptr) {
+    shell->manager->SetNativeCustomEventCallback(nullptr);
+    return;
+  }
+  shell->manager->SetNativeCustomEventCallback(
+      [callback, user_data](const std::string& name, int tag,
+                            const lynx::lepus::Value& param_value,
+                            const std::string& /*param_name*/) -> bool {
+        // The C ABI conversion lives here (not in ElementManager) so
+        // the core stays free of capi types. The tree is only valid
+        // for the duration of the callback — the embedder deep-copies.
+        lynx_ui_method_value_t params =
+            PubValueToCapi(lynx::pub::ValueImplLepus(param_value));
+        bool consumed = callback(user_data, tag, name.c_str(), &params);
+        CapiValueFree(&params);
+        return consumed;
+      });
 }
 
 // ----- subsecond ASLR anchor ------------------------------------------------
