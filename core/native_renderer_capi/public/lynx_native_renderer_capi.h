@@ -487,6 +487,48 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_element_animate(
     const lynx_ui_method_value_t* keyframes,
     const lynx_ui_method_value_t* options);
 
+// ----- Core-originated custom events -----------------------------------------
+//
+// Some component events are generated inside the engine core rather
+// than by the platform UI layer — today that is the `<list>` family
+// (`scroll` / `scrolltoupper` / `scrolltolower` / `snap` /
+// `layoutcomplete` / impression events) plus `<frame>` events. Those
+// events are dispatched to the JS event system only, so an embedder
+// without a JS runtime never sees them (the platform event-reporter
+// hook is NOT on their path).
+//
+// Registering this callback routes every core-originated custom event
+// to the embedder instead. Contract:
+//   - `element_id` is the target's `impl_id` — the same id space
+//     `lynx_element_get_id` returns.
+//   - `params` is the event payload (what JS would receive as
+//     `detail`), encoded as a `lynx_ui_method_value_t` tree. It is
+//     only valid for the duration of the call — deep-copy to retain.
+//     May be NULL when the event carries no payload.
+//   - The callback is invoked synchronously on the engine (TASM)
+//     thread from within the send path. Do not re-enter the engine;
+//     hand off to your own thread/queue for real work.
+//   - Return true to consume the event (it will NOT be forwarded to
+//     the JS event system); false to observe-and-forward.
+//
+// Platform-originated events (touch/gesture, platform-emitted
+// component events such as `<scroll-view>` scroll) are unaffected —
+// they keep flowing through the platform event-reporter hook.
+//
+// Pass a NULL `callback` to unregister. Must be called on the TASM
+// thread (e.g. via `lynx_shell_run_on_tasm_thread`) after fiber-arch
+// init, like the other element APIs.
+typedef bool (*lynx_custom_event_callback_t)(
+    void* user_data,
+    int32_t element_id,
+    const char* event_name,
+    const lynx_ui_method_value_t* params);
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_shell_set_custom_event_callback(
+    lynx_shell_t* shell,
+    lynx_custom_event_callback_t callback,
+    void* user_data);
+
 // ----- subsecond ASLR anchor ------------------------------------------------
 
 // No-op function whose address serves as a well-known anchor for

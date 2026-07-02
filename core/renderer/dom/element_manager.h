@@ -316,6 +316,17 @@ class ElementManager : public ElementContextDelegate,
   void SendNativeCustomEvent(const std::string &name, int tag,
                              const lepus::Value &param_value,
                              const std::string &param_name);
+  // Observer for core-originated custom events (list scroll/snap/
+  // layoutcomplete, frame events, …). Embedders without a JS runtime
+  // register this to receive events that would otherwise only be
+  // dispatched to the JS event system. Returning true consumes the
+  // event (it is not forwarded to the delegate / JS path).
+  using NativeCustomEventCallback = std::function<bool(
+      const std::string &name, int tag, const lepus::Value &param_value,
+      const std::string &param_name)>;
+  void SetNativeCustomEventCallback(NativeCustomEventCallback callback) {
+    native_custom_event_callback_ = std::move(callback);
+  }
   void ResetLayoutNodeStyle(int32_t id, tasm::CSSPropertyID css_id);
   void UpdateLayoutNodeAttribute(int32_t id, starlight::LayoutAttribute key,
                                  const lepus::Value &value);
@@ -1279,6 +1290,8 @@ class ElementManager : public ElementContextDelegate,
   bool push_touch_pseudo_flag_{false};
 
   bool enable_native_list_{false};
+  // See SetNativeCustomEventCallback.
+  NativeCustomEventCallback native_custom_event_callback_;
   // Indicate whether in parallel-element mode with sync layout(ALL_ON_UI,
   // MOST_ON_TASM) strategy
   bool parallel_with_sync_layout_{false};
