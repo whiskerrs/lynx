@@ -957,6 +957,10 @@ void ElementManager::SendAnimationEvent(const std::string &type, int tag,
 void ElementManager::SendNativeCustomEvent(const std::string &name, int tag,
                                            const lepus::Value &param_value,
                                            const std::string &param_name) {
+  if (native_custom_event_callback_ &&
+      native_custom_event_callback_(name, tag, param_value, param_name)) {
+    return;
+  }
   delegate_->SendNativeCustomEvent(name, tag, param_value, param_name);
 }
 

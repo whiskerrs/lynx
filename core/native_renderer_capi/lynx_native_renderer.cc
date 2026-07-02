@@ -935,6 +935,34 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_element_animate(
   return 0;
 }
 
+// ----- Core-originated custom events -----------------------------------------
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_shell_set_custom_event_callback(
+    lynx_shell_t* shell,
+    lynx_custom_event_callback_t callback,
+    void* user_data) {
+  if (shell == nullptr || shell->manager == nullptr) {
+    return;
+  }
+  if (callback == nullptr) {
+    shell->manager->SetNativeCustomEventCallback(nullptr);
+    return;
+  }
+  shell->manager->SetNativeCustomEventCallback(
+      [callback, user_data](const std::string& name, int tag,
+                            const lynx::lepus::Value& param_value,
+                            const std::string& /*param_name*/) -> bool {
+        // The C ABI conversion lives here (not in ElementManager) so
+        // the core stays free of capi types. The tree is only valid
+        // for the duration of the callback — the embedder deep-copies.
+        lynx_ui_method_value_t params =
+            PubValueToCapi(lynx::pub::ValueImplLepus(param_value));
+        bool consumed = callback(user_data, tag, name.c_str(), &params);
+        CapiValueFree(&params);
+        return consumed;
+      });
+}
+
 // ----- subsecond ASLR anchor ------------------------------------------------
 
 // Intentionally non-empty so the linker doesn't merge it with other
