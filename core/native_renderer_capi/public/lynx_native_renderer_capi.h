@@ -302,6 +302,32 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
     const uint8_t* recyclable,
     int32_t count);
 
+// Explicit diff actions for the decoupled `<list>` data source —
+// the minimal-action alternative to `lynx_element_set_update_list_info`
+// (which sends a full replace and therefore severs every ItemHolder's
+// identity, collapsing the scroll anchor to the top on data updates).
+// Items mentioned in NEITHER action keep their identity, matching how
+// ReactLynx drives the same adapter.
+//
+// Index contract (what `AdapterHelper` expects):
+//   - `remove_indices`: ascending indices into the PRE-update item-key
+//     list. All removals apply before any insert.
+//   - `insert_positions` / `insert_keys` (parallel, `insert_count`
+//     long): ascending splice points into the POST-removal list,
+//     applied in array order.
+//
+// Per-item layout metadata (estimated size / full-span / sticky /
+// recyclable) stays on the `<list-item>` elements, as with the
+// full-replace entry. Tail addition after ABI v2 — feature-detect via
+// dlsym.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions(
+    lynx_fiber_element_t* element,
+    const int32_t* remove_indices,
+    int32_t remove_count,
+    const int32_t* insert_positions,
+    const char* const* insert_keys,
+    int32_t insert_count);
+
 // ----- Pipeline -------------------------------------------------------------
 
 // Install `page` as the shell's root PageElement. `page` MUST have
