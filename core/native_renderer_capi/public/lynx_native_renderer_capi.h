@@ -328,6 +328,46 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions(
     const char* const* insert_keys,
     int32_t insert_count);
 
+// One list item's action entry for `lynx_element_update_list_actions_v2`:
+// the item-key plus the per-item layout metadata the adapter ingests
+// from actions (`fiber_full_spans_` / `fiber_sticky_*` /
+// `fiber_estimated_sizes_px_` / `fiber_unrecyclable_`). Layout is part
+// of the ABI — fields are fixed-width and must not be reordered.
+typedef struct lynx_list_item_action_t {
+  // Insert: ascending splice position into the post-removal list.
+  // Update: the item's index in the FINAL (post-remove+insert) list.
+  int32_t position;
+  // NUL-terminated UTF-8, borrowed for the duration of the call.
+  const char* item_key;
+  // Estimated main-axis size in px; < 0 = unset (native default).
+  int32_t estimated_main_axis_px;
+  // Booleans (0 / 1). For updates these SET the state both ways
+  // (true inserts into the adapter's meta set, false erases).
+  uint8_t full_span;
+  uint8_t sticky_top;
+  uint8_t sticky_bottom;
+  uint8_t recyclable;
+} lynx_list_item_action_t;
+
+// Metadata-carrying successor to `lynx_element_update_list_actions`
+// (whose signature is frozen by the ABI contract). Same index
+// semantics for removals/inserts; additionally:
+//   - insert entries carry the per-item layout metadata, which is the
+//     ONLY channel the adapter ingests it from (list-item element
+//     attributes are NOT read by the decoupled list);
+//   - `updates` refresh the metadata of SURVIVING items in place
+//     (emitted as updateAction {from == to, flush: false} — content
+//     re-render is the embedder's own reactive concern).
+// Tail addition after ABI v2 — feature-detect via dlsym.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions_v2(
+    lynx_fiber_element_t* element,
+    const int32_t* remove_indices,
+    int32_t remove_count,
+    const lynx_list_item_action_t* inserts,
+    int32_t insert_count,
+    const lynx_list_item_action_t* updates,
+    int32_t update_count);
+
 // ----- Pipeline -------------------------------------------------------------
 
 // Install `page` as the shell's root PageElement. `page` MUST have
