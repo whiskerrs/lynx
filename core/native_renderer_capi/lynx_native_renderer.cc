@@ -535,6 +535,80 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions(
                              lynx::lepus::Value(std::move(update_info)));
 }
 
+namespace {
+
+// Shared entry builder for `lynx_element_update_list_actions_v2`.
+// `as_update` adds the updateAction-only fields (`from`/`to`/`flush`);
+// inserts use `position`. Metadata booleans are always emitted: the
+// insert parser treats a false as a no-op, and the update parser needs
+// the explicit false to ERASE a previously-set flag.
+lynx::lepus::Value ListActionEntry(const lynx_list_item_action_t& a,
+                                   bool as_update) {
+  auto entry = lynx::lepus::Dictionary::Create();
+  if (as_update) {
+    entry->SetValue(lynx::base::String("from"), lynx::lepus::Value(a.position));
+    entry->SetValue(lynx::base::String("to"), lynx::lepus::Value(a.position));
+    entry->SetValue(lynx::base::String("flush"), lynx::lepus::Value(false));
+  } else {
+    entry->SetValue(lynx::base::String("position"),
+                    lynx::lepus::Value(a.position));
+  }
+  entry->SetValue(lynx::base::String("item-key"),
+                  lynx::lepus::Value(lynx::base::String(
+                      a.item_key != nullptr ? a.item_key : "")));
+  entry->SetValue(lynx::base::String("full-span"),
+                  lynx::lepus::Value(a.full_span != 0));
+  entry->SetValue(lynx::base::String("sticky-top"),
+                  lynx::lepus::Value(a.sticky_top != 0));
+  entry->SetValue(lynx::base::String("sticky-bottom"),
+                  lynx::lepus::Value(a.sticky_bottom != 0));
+  entry->SetValue(lynx::base::String("recyclable"),
+                  lynx::lepus::Value(a.recyclable != 0));
+  if (a.estimated_main_axis_px >= 0) {
+    entry->SetValue(lynx::base::String("estimated-main-axis-size-px"),
+                    lynx::lepus::Value(a.estimated_main_axis_px));
+  }
+  return lynx::lepus::Value(std::move(entry));
+}
+
+}  // namespace
+
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions_v2(
+    lynx_fiber_element_t* element,
+    const int32_t* remove_indices,
+    int32_t remove_count,
+    const lynx_list_item_action_t* inserts,
+    int32_t insert_count,
+    const lynx_list_item_action_t* updates,
+    int32_t update_count) {
+  if (element == nullptr || !element->ref || remove_count < 0 ||
+      insert_count < 0 || update_count < 0) {
+    return;
+  }
+  auto remove_array = lynx::lepus::CArray::Create();
+  for (int32_t i = 0; i < remove_count; ++i) {
+    remove_array->emplace_back(
+        lynx::lepus::Value(remove_indices != nullptr ? remove_indices[i] : 0));
+  }
+  auto insert_array = lynx::lepus::CArray::Create();
+  for (int32_t i = 0; inserts != nullptr && i < insert_count; ++i) {
+    insert_array->emplace_back(ListActionEntry(inserts[i], false));
+  }
+  auto update_array = lynx::lepus::CArray::Create();
+  for (int32_t i = 0; updates != nullptr && i < update_count; ++i) {
+    update_array->emplace_back(ListActionEntry(updates[i], true));
+  }
+  auto update_info = lynx::lepus::Dictionary::Create();
+  update_info->SetValue(lynx::base::String("removeAction"),
+                        lynx::lepus::Value(std::move(remove_array)));
+  update_info->SetValue(lynx::base::String("insertAction"),
+                        lynx::lepus::Value(std::move(insert_array)));
+  update_info->SetValue(lynx::base::String("updateAction"),
+                        lynx::lepus::Value(std::move(update_array)));
+  element->ref->SetAttribute(lynx::base::String("update-list-info"),
+                             lynx::lepus::Value(std::move(update_info)));
+}
+
 // ----- Pipeline -------------------------------------------------------------
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_shell_set_root_element(
