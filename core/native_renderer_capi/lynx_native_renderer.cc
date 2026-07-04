@@ -79,7 +79,11 @@ namespace {
 // per-item metadata arrays (real keys + full replace) so `<list>` can
 // diff reorders; added `lynx_element_set_attribute_object` for object-
 // valued attributes (e.g. `item-snap`).
-constexpr int32_t kLynxCapiAbiVersion = 2;
+// Bumped to 3: `lynx_element_update_list_actions` absorbs the
+// metadata-carrying signature (struct entries + in-place updates); the
+// interim keys-only variant and the `_v2` name are gone. Intentional
+// break while the capi has no external consumers.
+constexpr int32_t kLynxCapiAbiVersion = 3;
 }  // namespace
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT int32_t lynx_capi_abi_version(void) {
@@ -483,61 +487,9 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_set_update_list_info(
                              lynx::lepus::Value(std::move(update_info)));
 }
 
-LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions(
-    lynx_fiber_element_t* element,
-    const int32_t* remove_indices,
-    int32_t remove_count,
-    const int32_t* insert_positions,
-    const char* const* insert_keys,
-    int32_t insert_count) {
-  if (element == nullptr || !element->ref || remove_count < 0 ||
-      insert_count < 0) {
-    return;
-  }
-  // Same `{removeAction, insertAction}` schema as
-  // `lynx_element_set_update_list_info`, but built from EXPLICIT
-  // actions instead of a full replace. Items mentioned in neither
-  // action keep their ItemHolder identity — which is what lets the
-  // list's anchor logic hold the scroll position across an append
-  // (a full replace marks every on-screen child removed, so the
-  // anchor has no surviving sibling to re-attach to and the offset
-  // collapses to the top).
-  //
-  // Index contract (matches ReactLynx's `ListUpdateInfoRecording`
-  // output, which `AdapterHelper` is built to consume): removals are
-  // ascending indices into the PRE-update item-key list and are all
-  // applied first; insert positions are ascending splice points into
-  // the post-removal list, applied in array order.
-  auto remove_array = lynx::lepus::CArray::Create();
-  for (int32_t i = 0; i < remove_count; ++i) {
-    remove_array->emplace_back(
-        lynx::lepus::Value(remove_indices != nullptr ? remove_indices[i] : 0));
-  }
-  auto insert_array = lynx::lepus::CArray::Create();
-  for (int32_t i = 0; i < insert_count; ++i) {
-    auto entry = lynx::lepus::Dictionary::Create();
-    entry->SetValue(
-        lynx::base::String("position"),
-        lynx::lepus::Value(insert_positions != nullptr ? insert_positions[i]
-                                                       : 0));
-    const char* key = (insert_keys != nullptr) ? insert_keys[i] : nullptr;
-    entry->SetValue(
-        lynx::base::String("item-key"),
-        lynx::lepus::Value(lynx::base::String(key != nullptr ? key : "")));
-    insert_array->emplace_back(lynx::lepus::Value(std::move(entry)));
-  }
-  auto update_info = lynx::lepus::Dictionary::Create();
-  update_info->SetValue(lynx::base::String("removeAction"),
-                        lynx::lepus::Value(std::move(remove_array)));
-  update_info->SetValue(lynx::base::String("insertAction"),
-                        lynx::lepus::Value(std::move(insert_array)));
-  element->ref->SetAttribute(lynx::base::String("update-list-info"),
-                             lynx::lepus::Value(std::move(update_info)));
-}
-
 namespace {
 
-// Shared entry builder for `lynx_element_update_list_actions_v2`.
+// Shared entry builder for `lynx_element_update_list_actions`.
 // `as_update` adds the updateAction-only fields (`from`/`to`/`flush`);
 // inserts use `position`. Metadata booleans are always emitted: the
 // insert parser treats a false as a no-op, and the update parser needs
@@ -573,7 +525,7 @@ lynx::lepus::Value ListActionEntry(const lynx_list_item_action_t& a,
 
 }  // namespace
 
-LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions_v2(
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_update_list_actions(
     lynx_fiber_element_t* element,
     const int32_t* remove_indices,
     int32_t remove_count,
