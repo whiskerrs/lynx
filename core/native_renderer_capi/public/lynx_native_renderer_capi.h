@@ -217,6 +217,14 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_remove_child(
     lynx_fiber_element_t* parent,
     lynx_fiber_element_t* child);
 
+// Insert `child` into `parent` immediately before `reference_child`. A
+// null `reference_child` appends at the tail. Lets a renderer place a
+// child at a position in one call instead of append-then-rotate.
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_insert_child_before(
+    lynx_fiber_element_t* parent,
+    lynx_fiber_element_t* child,
+    lynx_fiber_element_t* reference_child);
+
 // ----- List native item provider -------------------------------------------
 
 // Returned by `lynx_list_component_at_index_fn` to signal "no element
