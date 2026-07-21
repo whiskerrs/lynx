@@ -358,6 +358,21 @@ LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_remove_child(
   parent->ref->RemoveNode(child->ref);
 }
 
+LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_element_insert_child_before(
+    lynx_fiber_element_t* parent,
+    lynx_fiber_element_t* child,
+    lynx_fiber_element_t* reference_child) {
+  if (parent == nullptr || child == nullptr || !parent->ref || !child->ref) {
+    return;
+  }
+  // A null / unbound reference inserts at the tail (FiberElement's
+  // InsertNodeBefore appends when the reference is null).
+  fml::RefPtr<lynx::tasm::FiberElement> reference =
+      (reference_child != nullptr) ? reference_child->ref
+                                   : fml::RefPtr<lynx::tasm::FiberElement>{};
+  parent->ref->InsertNodeBefore(child->ref, reference);
+}
+
 // ----- List native item provider -------------------------------------------
 
 LYNX_NATIVE_RENDERER_CAPI_EXPORT void lynx_list_set_native_item_provider(
