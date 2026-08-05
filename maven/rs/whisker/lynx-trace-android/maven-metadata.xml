@@ -3,11 +3,11 @@
   <groupId>rs.whisker</groupId>
   <artifactId>lynx-trace-android</artifactId>
   <versioning>
-    <latest>3.8.0-whisker.13</latest>
-    <release>3.8.0-whisker.13</release>
+    <latest>4.0.1-whisker.1</latest>
+    <release>4.0.1-whisker.1</release>
     <versions>
-      <version>3.8.0-whisker.13</version>
+      <version>4.0.1-whisker.1</version>
     </versions>
-    <lastUpdated>20260721050759</lastUpdated>
+    <lastUpdated>20260805143431</lastUpdated>
   </versioning>
 </metadata>
