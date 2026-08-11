@@ -690,7 +690,10 @@ void PaintingContextDarwin::Invoke(
 
       [owner.uiContext.lynxContext runOnTasmThread:^{
         // exec the block on tasm thread.
-        block(code, PubLepusValue(LynxConvertToLepusValue(data)));
+        // useBoolLiterals: an @YES/@NO result must stay a bool through
+        // the lepus round-trip — the default converts it to 0/1 and a
+        // typed consumer (Whisker's invoke_typed::<bool>) rejects it.
+        block(code, PubLepusValue(LynxConvertToLepusValue(data, YES)));
       }];
     };
 
